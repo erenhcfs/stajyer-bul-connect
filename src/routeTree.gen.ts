@@ -11,11 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GirisRouteImport } from './routes/giris'
+import { Route as HakkimizdaRouteImport } from './routes/hakkimizda'
 import { Route as IlanlarRouteImport } from './routes/ilanlar'
+import { Route as IsletmePaneliRouteImport } from './routes/isletme-paneli'
 import { Route as IsverenlerRouteImport } from './routes/isverenler'
 import { Route as KayitRouteImport } from './routes/kayit'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
+import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as StajyerBulRouteImport } from './routes/stajyer-bul'
+import { Route as YonetimRouteImport } from './routes/yonetim'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -27,9 +31,19 @@ const GirisRoute = GirisRouteImport.update({
   path: '/giris',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HakkimizdaRoute = HakkimizdaRouteImport.update({
+  id: '/hakkimizda',
+  path: '/hakkimizda',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IlanlarRoute = IlanlarRouteImport.update({
   id: '/ilanlar',
   path: '/ilanlar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IsletmePaneliRoute = IsletmePaneliRouteImport.update({
+  id: '/isletme-paneli',
+  path: '/isletme-paneli',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IsverenlerRoute = IsverenlerRouteImport.update({
@@ -47,78 +61,116 @@ const NasilCalisirRoute = NasilCalisirRouteImport.update({
   path: '/nasil-calisir',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfilRoute = ProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StajyerBulRoute = StajyerBulRouteImport.update({
   id: '/stajyer-bul',
   path: '/stajyer-bul',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const YonetimRoute = YonetimRouteImport.update({
+  id: '/yonetim',
+  path: '/yonetim',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/giris': typeof GirisRoute
+  '/hakkimizda': typeof HakkimizdaRoute
   '/ilanlar': typeof IlanlarRoute
+  '/isletme-paneli': typeof IsletmePaneliRoute
   '/isverenler': typeof IsverenlerRoute
   '/kayit': typeof KayitRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/profil': typeof ProfilRoute
   '/stajyer-bul': typeof StajyerBulRoute
+  '/yonetim': typeof YonetimRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/giris': typeof GirisRoute
+  '/hakkimizda': typeof HakkimizdaRoute
   '/ilanlar': typeof IlanlarRoute
+  '/isletme-paneli': typeof IsletmePaneliRoute
   '/isverenler': typeof IsverenlerRoute
   '/kayit': typeof KayitRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/profil': typeof ProfilRoute
   '/stajyer-bul': typeof StajyerBulRoute
+  '/yonetim': typeof YonetimRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/giris': typeof GirisRoute
+  '/hakkimizda': typeof HakkimizdaRoute
   '/ilanlar': typeof IlanlarRoute
+  '/isletme-paneli': typeof IsletmePaneliRoute
   '/isverenler': typeof IsverenlerRoute
   '/kayit': typeof KayitRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/profil': typeof ProfilRoute
   '/stajyer-bul': typeof StajyerBulRoute
+  '/yonetim': typeof YonetimRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/giris'
+    | '/hakkimizda'
     | '/ilanlar'
+    | '/isletme-paneli'
     | '/isverenler'
     | '/kayit'
     | '/nasil-calisir'
+    | '/profil'
     | '/stajyer-bul'
+    | '/yonetim'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/giris'
+    | '/hakkimizda'
     | '/ilanlar'
+    | '/isletme-paneli'
     | '/isverenler'
     | '/kayit'
     | '/nasil-calisir'
+    | '/profil'
     | '/stajyer-bul'
+    | '/yonetim'
   id:
     | '__root__'
     | '/'
     | '/giris'
+    | '/hakkimizda'
     | '/ilanlar'
+    | '/isletme-paneli'
     | '/isverenler'
     | '/kayit'
     | '/nasil-calisir'
+    | '/profil'
     | '/stajyer-bul'
+    | '/yonetim'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GirisRoute: typeof GirisRoute
+  HakkimizdaRoute: typeof HakkimizdaRoute
   IlanlarRoute: typeof IlanlarRoute
+  IsletmePaneliRoute: typeof IsletmePaneliRoute
   IsverenlerRoute: typeof IsverenlerRoute
   KayitRoute: typeof KayitRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
+  ProfilRoute: typeof ProfilRoute
   StajyerBulRoute: typeof StajyerBulRoute
+  YonetimRoute: typeof YonetimRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -137,11 +189,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GirisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hakkimizda': {
+      id: '/hakkimizda'
+      path: '/hakkimizda'
+      fullPath: '/hakkimizda'
+      preLoaderRoute: typeof HakkimizdaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ilanlar': {
       id: '/ilanlar'
       path: '/ilanlar'
       fullPath: '/ilanlar'
       preLoaderRoute: typeof IlanlarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/isletme-paneli': {
+      id: '/isletme-paneli'
+      path: '/isletme-paneli'
+      fullPath: '/isletme-paneli'
+      preLoaderRoute: typeof IsletmePaneliRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/isverenler': {
@@ -165,11 +231,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NasilCalisirRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profil': {
+      id: '/profil'
+      path: '/profil'
+      fullPath: '/profil'
+      preLoaderRoute: typeof ProfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stajyer-bul': {
       id: '/stajyer-bul'
       path: '/stajyer-bul'
       fullPath: '/stajyer-bul'
       preLoaderRoute: typeof StajyerBulRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/yonetim': {
+      id: '/yonetim'
+      path: '/yonetim'
+      fullPath: '/yonetim'
+      preLoaderRoute: typeof YonetimRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -178,11 +258,15 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GirisRoute: GirisRoute,
+  HakkimizdaRoute: HakkimizdaRoute,
   IlanlarRoute: IlanlarRoute,
+  IsletmePaneliRoute: IsletmePaneliRoute,
   IsverenlerRoute: IsverenlerRoute,
   KayitRoute: KayitRoute,
   NasilCalisirRoute: NasilCalisirRoute,
+  ProfilRoute: ProfilRoute,
   StajyerBulRoute: StajyerBulRoute,
+  YonetimRoute: YonetimRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

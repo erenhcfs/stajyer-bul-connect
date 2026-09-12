@@ -13,7 +13,7 @@ export function Footer() {
           <Link to="/stajyer-bul" className="hover:text-foreground">Stajyer Bul</Link>
           <Link to="/ilanlar" className="hover:text-foreground">İlanlar</Link>
           <Link to="/nasil-calisir" className="hover:text-foreground">Nasıl Çalışır?</Link>
-          <Link to="/isverenler" className="hover:text-foreground">İşverenler</Link>
+          <Link to="/isletme-paneli" className="hover:text-foreground">İşletme Paneli</Link>
         </nav>
         <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} StajyerBul · stajyerbul.com.tr</p>
       </div>

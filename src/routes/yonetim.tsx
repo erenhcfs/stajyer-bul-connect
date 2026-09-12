@@ -255,7 +255,7 @@ function YonetimPage() {
                 <p className="text-sm text-muted-foreground p-6 rounded-xl border border-border bg-card">Yayınlanmış ilan bulunmuyor.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {allListings.config ? null : allListings.map((item) => (
+                  {allListings.map((item) => (
                     <div key={item.id} className="rounded-2xl border border-border bg-card p-5 shadow-sm flex flex-col justify-between">
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-2">
