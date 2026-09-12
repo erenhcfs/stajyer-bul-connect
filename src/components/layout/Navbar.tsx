@@ -63,17 +63,6 @@ export function Navbar() {
           >
             İlanlar
           </Link>
-
-          {/* Hakkımızda Menüsü */}
-          <Link
-            to="/hakkimizda"
-            className="relative inline-flex items-center gap-1.5 px-4 py-2 mx-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:bg-amber-500/20 hover:scale-105 transition duration-300"
-            activeProps={{ className: "bg-amber-500/20 shadow-[0_0_20px_rgba(245,158,11,0.4)]" }}
-          >
-            <Sparkles className="size-3.5 animate-pulse text-amber-400" />
-            Hakkımızda
-          </Link>
-
           <Link
             to="/nasil-calisir"
             className="rounded-lg px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -94,6 +83,16 @@ export function Navbar() {
             activeProps={{ className: "text-foreground" }}
           >
             Blog
+          </Link>
+
+          {/* Hakkımızda Menüsü (En Sağda) */}
+          <Link
+            to="/hakkimizda"
+            className="relative inline-flex items-center gap-1.5 px-4 py-2 ml-2 rounded-xl text-xs font-extrabold uppercase tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:bg-amber-500/20 hover:scale-105 transition duration-300"
+            activeProps={{ className: "bg-amber-500/20 shadow-[0_0_20px_rgba(245,158,11,0.4)]" }}
+          >
+            <Sparkles className="size-3.5 animate-pulse text-amber-400" />
+            Hakkımızda
           </Link>
         </nav>
 
@@ -163,14 +162,6 @@ export function Navbar() {
               İlanlar
             </Link>
             <Link
-              to="/hakkimizda"
-              onClick={() => setOpen(false)}
-              className="inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold text-amber-500 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20"
-            >
-              <Sparkles className="size-4 text-amber-400" />
-              Hakkımızda
-            </Link>
-            <Link
               to="/nasil-calisir"
               onClick={() => setOpen(false)}
               className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
@@ -190,6 +181,14 @@ export function Navbar() {
               className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
             >
               Blog
+            </Link>
+            <Link
+              to="/hakkimizda"
+              onClick={() => setOpen(false)}
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold text-amber-500 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20"
+            >
+              <Sparkles className="size-4 text-amber-400" />
+              Hakkımızda
             </Link>
 
             <div className="mt-2 pt-3 border-t border-border flex flex-col gap-2">
