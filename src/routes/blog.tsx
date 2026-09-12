@@ -1,69 +1,33 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { Sparkles, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/blog")({
-  component: BlogPage,
+  component: ComingSoonBlogPage,
 });
 
-interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  image_url: string;
-  created_at: string;
-}
-
-function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchPosts() {
-      const { data, error } = await supabase
-        .from("blogs")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Blog yazıları çekilirken hata oluştu:", error);
-      } else {
-        setPosts(data || []);
-      }
-      setLoading(false);
-    }
-
-    fetchPosts();
-  }, []);
-
-  if (loading) {
-    return <div className="text-center py-20 text-white">Yükleniyor...</div>;
-  }
-
+function ComingSoonBlogPage() {
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold text-white mb-8">Blog ve Staj Rehberi</h1>
+    <div className="container-x flex min-h-[70vh] flex-col items-center justify-center text-center py-12">
+      <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 border border-amber-500/30 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-amber-500 mb-6">
+        <Sparkles className="size-4 animate-pulse text-amber-400" />
+        Çok Yakında
+      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {posts.map((post) => (
-          <div key={post.id} className="bg-slate-800 rounded-lg overflow-hidden shadow-lg border border-slate-700 flex flex-col">
-            {post.image_url && (
-              <img src={post.image_url} alt={post.title} className="w-full h-48 object-cover" />
-            )}
-            <div className="p-6 flex flex-col flex-grow">
-              <h2 className="text-xl font-semibold text-white mb-2">{post.title}</h2>
-              <p className="text-slate-400 text-sm mb-4 flex-grow">{post.excerpt}</p>
-              <Link
-                to={`/blog/$slug`}
-                params={{ slug: post.slug }}
-                className="text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center"
-              >
-                Devamını Oku &rarr;
-              </Link>
-            </div>
-          </div>
-        ))}
+      <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl text-foreground">
+        Blog Sistemi Çok Yakında Yayında!
+      </h1>
+      
+      <p className="mt-4 max-w-md text-muted-foreground text-base sm:text-lg">
+        Staj süreçleri, kariyer ipuçları ve mesleki rehberlerle dolu blog köşemiz en kısa sürede sizlerle olacak.
+      </p>
+
+      <div className="mt-8">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+        >
+          <ArrowLeft className="size-4" /> Ana Sayfaya Dön
+        </Link>
       </div>
     </div>
   );

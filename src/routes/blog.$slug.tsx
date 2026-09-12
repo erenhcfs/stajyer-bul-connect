@@ -1,94 +1,96 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { ArrowLeft } from "lucide-react";
+import { Calendar, ArrowLeft, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/blog/$slug")({
-  component: BlogPostDetail,
+  component: BlogDetailPage,
 });
 
-interface BlogPost {
+interface BlogPostDetail {
   id: string;
   title: string;
-  slug: string;
   content: string;
   image_url: string;
   created_at: string;
 }
 
-function BlogPostDetail() {
+function BlogDetailPage() {
   const { slug } = Route.useParams();
-  const [post, setPost] = useState<BlogPost | null>(null);
+  const [post, setPost] = useState<BlogPostDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchPost() {
-      const { data, error } = await supabase
-        .from("blogs")
-        .select("*")
-        .eq("slug", slug)
-        .single();
+    async function fetchPostDetail() {
+      try {
+        const { data, error } = await supabase
+          .from("blogs")
+          .select("id, title, content, image_url, created_at")
+          .eq("slug", slug)
+          .single();
 
-      if (error) {
-        console.error("Blog yazısı yüklenirken hata oluştu:", error);
-      } else {
+        if (error) throw error;
         setPost(data);
+      } catch (err) {
+        console.error("Yazı yüklenirken hata:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
-    fetchPost();
+    fetchPostDetail();
   }, [slug]);
 
   if (loading) {
-    return <div className="text-center py-20 text-white">Yükleniyor...</div>;
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (!post) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-        <h1 className="text-2xl font-bold text-white mb-4">Yazı Bulunamadı</h1>
-        <p className="text-slate-400 mb-6">Aradığınız blog yazısı silinmiş veya mevcut değil.</p>
-        <Link to="/blog" className="text-indigo-400 hover:underline">
-          &larr; Blog listesine geri dön
+      <div className="container-x py-20 text-center">
+        <h1 className="text-2xl font-bold">Yazı bulunamadı</h1>
+        <p className="mt-2 text-muted-foreground">Aradığınız blog yazısı silinmiş veya taşınmış olabilir.</p>
+        <Link
+          to="/blog"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
+          <ArrowLeft className="size-4" /> Bloga Dön
         </Link>
       </div>
     );
   }
 
   return (
-    <article className="max-w-4xl mx-auto px-4 py-12">
+    <article className="container-x py-12 max-w-3xl">
       <Link
         to="/blog"
-        className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-8"
       >
-        <ArrowLeft className="size-4" />
-        <span>Bloga Dön</span>
+        <ArrowLeft className="size-4" /> Tüm Yazılara Dön
       </Link>
 
-      <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+        <Calendar className="size-4" />
+        <span>{new Date(post.created_at).toLocaleDateString("tr-TR")}</span>
+      </div>
+
+      <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl text-foreground">
         {post.title}
       </h1>
 
-      <p className="text-sm text-slate-400 mb-8">
-        {new Date(post.created_at).toLocaleDateString("tr-TR", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })}
-      </p>
-
       {post.image_url && (
-        <img
-          src={post.image_url}
-          alt={post.title}
-          className="w-full h-[400px] object-cover rounded-xl mb-8 border border-slate-700 shadow-xl"
-        />
+        <div className="mt-8 aspect-video w-full overflow-hidden rounded-2xl bg-muted shadow-md">
+          <img src={post.image_url} alt={post.title} className="h-full w-full object-cover" />
+        </div>
+        
       )}
 
-      {/* Blog İçeriği */}
       <div 
-        className="prose prose-invert max-w-none text-slate-300 leading-relaxed space-y-4"
+        className="mt-10 prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed space-y-4"
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
     </article>
