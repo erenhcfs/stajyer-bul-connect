@@ -193,6 +193,11 @@ function RootShell({ children }: { children: ReactNode }) {
         />
       </head>
 
+
+
+
+
+
       <body>
         {children}
         <Scripts />
@@ -210,3 +215,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
