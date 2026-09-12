@@ -164,6 +164,13 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
 
+        {/* Google AdSense */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2311108731423361"
+          crossOrigin="anonymous"
+        />
+
         {/* Google için StajyerBul marka bilgisi */}
         <script
           type="application/ld+json"
@@ -193,11 +200,6 @@ function RootShell({ children }: { children: ReactNode }) {
         />
       </head>
 
-
-
-
-
-
       <body>
         {children}
         <Scripts />
@@ -215,4 +217,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-
