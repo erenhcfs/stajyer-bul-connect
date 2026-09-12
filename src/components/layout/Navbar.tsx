@@ -88,6 +88,13 @@ export function Navbar() {
           >
             İşletme Paneli
           </Link>
+          <Link
+            to="/blog"
+            className="rounded-lg px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            activeProps={{ className: "text-foreground" }}
+          >
+            Blog
+          </Link>
         </nav>
 
         {/* Sağ Kısım: Kullanıcı / Giriş Butonları */}
@@ -177,6 +184,13 @@ export function Navbar() {
               className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
             >
               İşletme Paneli
+            </Link>
+            <Link
+              to="/blog"
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
+            >
+              Blog
             </Link>
 
             <div className="mt-2 pt-3 border-t border-border flex flex-col gap-2">
