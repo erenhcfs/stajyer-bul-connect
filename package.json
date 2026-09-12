@@ -15,8 +15,9 @@
     "rolldown": "1.2.1"
   },
   "scripts": {
-    "dev": "vite dev",
-    "build": "npx vinxi build",
+    "dev": "vinxi dev",
+    "build": "vinxi build",
+    "start": "vinxi start",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."
