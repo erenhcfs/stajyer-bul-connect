@@ -47,7 +47,7 @@ export function Navbar() {
           <Logo />
         </div>
 
-        {/* Orta Kısım: Flex ile Kusursuz Ortalanmış Navigasyon */}
+        {/* Orta Kısım: Navigasyon */}
         <nav className="hidden items-center gap-1 md:flex" aria-label="Ana menü">
           <Link
             to="/stajyer-bul"
@@ -64,7 +64,7 @@ export function Navbar() {
             İlanlar
           </Link>
 
-          {/* Ortadaki Parlak Altın Sarısı Hakkımızda Menüsü */}
+          {/* Hakkımızda Menüsü */}
           <Link
             to="/hakkimizda"
             className="relative inline-flex items-center gap-1.5 px-4 py-2 mx-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.25)] hover:bg-amber-500/20 hover:scale-105 transition duration-300"
@@ -162,7 +162,6 @@ export function Navbar() {
             >
               İlanlar
             </Link>
-            {/* Mobilde Altın Sarısı Hakkımızda Butonu */}
             <Link
               to="/hakkimizda"
               onClick={() => setOpen(false)}
