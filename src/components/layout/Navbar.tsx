@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import logoMark from "@/assets/logo-mark.png.asset.json";
 
 const links = [
   { to: "/stajyer-bul", label: "Stajyer Bul" },
@@ -12,14 +13,9 @@ const links = [
 export function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2" aria-label="StajyerBul ana sayfa">
-      <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground shadow-glow">
-        <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.5-3.5" />
-        </svg>
-      </span>
+      <img src={logoMark.url} alt="" width={36} height={41} className="h-9 w-auto" />
       <span className="text-lg font-extrabold tracking-tight">
-        STAJYER<span className="text-primary">BUL</span>
+        Stajyer <span className="text-primary">Bul</span>
       </span>
     </Link>
   );
