@@ -1,0 +1,458 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { User, Save, CheckCircle2, Briefcase, Camera } from "lucide-react";
+
+export const Route = createFileRoute("/profil")({
+  head: () => ({
+    meta: [
+      { title: "Profil Düzenle — StajyerBul" },
+      { name: "description", content: "Kullanıcı profil bilgilerinizi güncelleyin." },
+    ],
+  }),
+  component: ProfilPage,
+});
+
+// Türkiye'nin Büyükşehirleri / Önemli İlleri Listesi
+const TURKEY_CITIES = [
+  "İstanbul (Anadolu)", "İstanbul (Avrupa)", "Ankara", "İzmir", "Bursa", 
+  "Kocaeli", "Konya", "Antalya", "Adana", "Gaziantep", "Tekirdağ", "Sakarya", "Manisa", "Diğer"
+];
+
+// MESEM, Meslek Liseleri ve Üniversite / MYO Popüler Bölümleri Listesi
+const POPULAR_DEPARTMENTS = [
+  "CNC / Talaşlı Üretim",
+  "Bilişim Teknolojileri / Yazılım",
+  "Bilgisayar Mühendisliği",
+  "Yazılım Mühendisliği",
+  "Elektrik - Elektronik Teknolojisi / Mühendisliği",
+  "Makine Teknolojisi / Mühendisliği",
+  "Metal Teknolojisi",
+  "Motorlu Araçlar Teknolojisi",
+  "Muhasebe ve Finansman",
+  "Grafik ve Fotoğraf / Tasarım",
+  "Tesisat Teknolojisi ve İklimlendirme",
+  "Endüstriyel Otomasyon / Mekatronik",
+  "Yönetim Bilişim Sistemleri",
+  "Diğer"
+];
+
+// Yaş Listesi
+const AGES = Array.from({ length: 13 }, (_, i) => 15 + i); // 15'ten 27'ye kadar
+
+function ProfilPage() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [userRole, setUserRole] = useState<string>("stajyer");
+
+  // Stajyer Form Alanları
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("İstanbul (Anadolu)");
+  const [school, setSchool] = useState("");
+  const [grade, setGrade] = useState("11. Sınıf");
+  const [department, setDepartment] = useState("CNC / Talaşlı Üretim");
+  const [age, setAge] = useState<number>(18);
+  const [skills, setSkills] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [isLookingForInternship, setIsLookingForInternship] = useState(false);
+
+  // İşveren Form Alanları
+  const [companyName, setCompanyName] = useState("");
+  const [sector, setSector] = useState("");
+  const [taxNumber, setTaxNumber] = useState("");
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      window.location.href = "/giris";
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Profil çekilemedi:", error.message);
+    }
+
+    if (data) {
+      setUserRole(data.role === "isveren" ? "isveren" : "stajyer");
+      setFullName(data.full_name || "");
+      setPhone(data.phone || "");
+      setCity(data.city || data.location || "İstanbul (Anadolu)");
+      setSchool(data.school || "");
+      setGrade(data.grade || "11. Sınıf");
+      setDepartment(data.department || "CNC / Talaşlı Üretim");
+      setAge(data.age || 18);
+      setSkills(data.skills || "");
+      setAvatarUrl(data.avatar_url || "");
+      setIsLookingForInternship(!!data.is_looking_for_internship);
+
+      setCompanyName(data.company_name || "");
+      setSector(data.sector || "");
+      setTaxNumber(data.tax_number || "");
+    }
+
+    setLoading(false);
+  };
+
+  // Profil Resmi Yükleme Fonksiyonu
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploadingImage(true);
+      if (!e.target.files || e.target.files.length === 0) return;
+      
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      setAvatarUrl(data.publicUrl);
+    } catch (error: any) {
+      alert("Resim yüklenirken hata oluştu: " + error.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage("");
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setSaving(false);
+      return;
+    }
+
+    const profileData = {
+      id: user.id,
+      email: user.email,
+      role: userRole,
+      full_name: fullName,
+      phone: phone,
+      city: city,
+      location: city,
+      school: school,
+      grade: grade,
+      department: department,
+      age: Number(age),
+      skills: skills,
+      avatar_url: avatarUrl,
+      is_looking_for_internship: isLookingForInternship,
+      company_name: companyName,
+      sector: sector,
+      tax_number: taxNumber,
+    };
+
+    const { error } = await supabase
+      .from("profiles")
+      .upsert(profileData, { onConflict: "id" });
+
+    if (error) {
+      setMessage("Güncellenirken hata oluştu: " + error.message);
+    } else {
+      setMessage("Profiliniz başarıyla kaydedildi!");
+      fetchProfile();
+    }
+    setSaving(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background text-foreground">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">Profil yükleniyor...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <Navbar />
+      <main className="flex-1 container-x py-10 max-w-3xl mx-auto space-y-8">
+        
+        <div className="border-b border-border pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold flex items-center gap-2">
+              <User className="size-8 text-primary" />
+              Hesap ve Profil Ayarları
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Profil bilgilerinizi güncelleyin ve staj arama tercihlerinizi yönetin.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-muted p-1.5 rounded-xl border border-border">
+            <button
+              type="button"
+              onClick={() => setUserRole("stajyer")}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${userRole === "stajyer" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Stajyer Modu
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserRole("isveren")}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${userRole === "isveren" ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              İşveren Modu
+            </button>
+          </div>
+        </div>
+
+        {message && (
+          <div className={`p-4 rounded-xl text-sm font-medium flex items-center gap-2 ${message.includes("başarıyla") ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-destructive/10 text-destructive border border-destructive/20"}`}>
+            <CheckCircle2 className="size-5 shrink-0" />
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleUpdate} className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm">
+          
+          {userRole === "stajyer" ? (
+            <>
+              {/* Profil Resmi Yükleme Alanı */}
+              <div className="flex items-center gap-5 pb-6 border-b border-border">
+                <div className="size-20 rounded-2xl bg-muted border-2 border-primary/20 overflow-hidden flex items-center justify-center relative shadow-inner">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Profil" className="size-full object-cover" />
+                  ) : (
+                    <User className="size-8 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-muted-foreground">Profil Fotoğrafı</label>
+                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-xs font-semibold cursor-pointer hover:bg-secondary/80 transition">
+                    <Camera className="size-4" />
+                    {uploadingImage ? "Yükleniyor..." : "Fotoğraf Seç / Değiştir"}
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  </label>
+                  <p className="text-[11px] text-muted-foreground">İşverenlerin sizi daha rahat tanıması için net bir fotoğraf yükleyin.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Ad Soyad</label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Adınız Soyadınız"
+                    required
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Telefon Numarası</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="05XX XXX XX XX"
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Okul / Üniversite Adı</label>
+                  <input
+                    type="text"
+                    value={school}
+                    onChange={(e) => setSchool(e.target.value)}
+                    placeholder="Örn: ... Mesleki ve Teknik Anadolu Lisesi / ... Üniversitesi"
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Sınıf / Seviye</label>
+                  <select
+                    value={grade}
+                    onChange={(e) => setGrade(e.target.value)}
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  >
+                    <option value="10. Sınıf">10. Sınıf</option>
+                    <option value="11. Sınıf">11. Sınıf (MESEM)</option>
+                    <option value="12. Sınıf">12. Sınıf (MESEM / Staj)</option>
+                    <option value="Üniversite 1. Sınıf">Üniversite 1. Sınıf</option>
+                    <option value="Üniversite 2. Sınıf (MYO)">Üniversite 2. Sınıf (MYO)</option>
+                    <option value="Üniversite 3. Sınıf">Üniversite 3. Sınıf</option>
+                    <option value="Üniversite 4. Sınıf">Üniversite 4. Sınıf</option>
+                    <option value="Mezun">Mezun</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Bölüm / Alan (Listeden Seçiniz)</label>
+                  <select
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  >
+                    {POPULAR_DEPARTMENTS.map((dept) => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Yaş</label>
+                  <select
+                    value={age}
+                    onChange={(e) => setAge(Number(e.target.value))}
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  >
+                    {AGES.map((a) => (
+                      <option key={a} value={a}>{a} Yaş</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Oturduğu Şehir / Konum</label>
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  >
+                    {TURKEY_CITIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Yetenekler / Bildiğiniz Programlar</label>
+                <textarea
+                  rows={3}
+                  value={skills}
+                  onChange={(e) => setSkills(e.target.value)}
+                  placeholder="Örn: Fanuc, AutoCAD, React, C# (virgülle ayırarak yazın)"
+                  className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                />
+              </div>
+
+              <div className="rounded-2xl border-2 border-primary/20 bg-primary/5 p-5 flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <label htmlFor="internship-toggle" className="font-bold text-base flex items-center gap-2 cursor-pointer">
+                    <Briefcase className="size-5 text-primary" /> Aktif Staj Arıyorum
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Bu seçeneği işaretlediğinizde işletmeler "Stajyer Bul" sayfasında sizi görüntüleyebilir ve teklif gönderebilir.
+                  </p>
+                </div>
+                <input
+                  id="internship-toggle"
+                  type="checkbox"
+                  checked={isLookingForInternship}
+                  onChange={(e) => setIsLookingForInternship(e.target.checked)}
+                  className="size-5 rounded border-input accent-primary cursor-pointer"
+                />
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">İşletme / Şirket Adı</label>
+                <input
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  required
+                  className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Sektör</label>
+                  <input
+                    type="text"
+                    value={sector}
+                    onChange={(e) => setSector(e.target.value)}
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Vergi Numarası</label>
+                  <input
+                    type="text"
+                    value={taxNumber}
+                    onChange={(e) => setTaxNumber(e.target.value)}
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">İletişim Telefonu</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Şehir</label>
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
+                  >
+                    {TURKEY_CITIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end pt-4 border-t border-border">
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 transition disabled:opacity-50"
+            >
+              <Save className="size-4" />
+              {saving ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
+            </button>
+          </div>
+
+        </form>
+      </main>
+      <Footer />
+    </div>
+  );
+}

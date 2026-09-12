@@ -86,7 +86,7 @@ function Index() {
                 <Link to="/stajyer-bul" className="btn btn-primary btn-lg w-full sm:w-auto">
                   Stajyer Bul <ArrowRight className="size-4" />
                 </Link>
-                <Link to="/kayit" className="btn btn-outline btn-lg w-full sm:w-auto">
+                <Link to="/isletme-paneli" className="btn btn-outline btn-lg w-full sm:w-auto">
                   Staj İlanı Oluştur
                 </Link>
               </div>
@@ -219,7 +219,7 @@ function Index() {
                 <h3 className="mt-5 text-2xl font-extrabold tracking-tight">İşveren misin?</h3>
                 <p className="mt-2 text-muted-foreground">Firmanı doğrula, ilan yayınla ve adaylara doğrudan teklif gönder.</p>
               </div>
-              <Link to="/isverenler" className="btn btn-primary mt-6 w-fit">İşveren olarak başla</Link>
+              <Link to="/isletme-paneli" className="btn btn-primary mt-6 w-fit">İşveren olarak başla</Link>
             </div>
             <div className="card-soft card-hover flex flex-col justify-between bg-primary p-8 text-primary-foreground [&_p]:text-primary-foreground/80">
               <div>
@@ -227,7 +227,7 @@ function Index() {
                 <h3 className="mt-5 text-2xl font-extrabold tracking-tight">Staj mı arıyorsun?</h3>
                 <p className="mt-2">Profilini oluştur, ilanlara başvur ve işverenlerden teklif al.</p>
               </div>
-              <Link to="/kayit" className="btn mt-6 w-fit bg-background text-primary hover:bg-accent">Profilini oluştur</Link>
+              <Link to="/profil" className="btn mt-6 w-fit bg-background text-primary hover:bg-accent">Profilini oluştur</Link>
             </div>
           </div>
         </section>
