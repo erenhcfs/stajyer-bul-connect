@@ -1,7 +1,11 @@
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
+import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+
+export default defineConfig({
+  tanstackStart: {
+    server: { entry: "server" },
+  },
+  // Vercel build çıktısının doğru yolları bulması için Vite taban ayarı:
+  vite: {
+    base: "/",
+  },
+});
