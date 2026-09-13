@@ -27,18 +27,27 @@ import {
   type BlogPost,
 } from "@/lib/blog-helpers";
 
-const SITE_URL = "https://stajyerbul.com"; // kendi canlı domaninle değiştir
+const SITE_URL = "https://stajyerbul.com";
 
 export const Route = createFileRoute("/blog")({
   component: BlogPage,
   loader: async () => {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .select("*")
-      .eq("published", true)
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return (data ?? []) as BlogPost[];
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .eq("published", true)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Blog yüklenirken Supabase hatası:", error);
+        return [];
+      }
+      return (data ?? []) as BlogPost[];
+    } catch (err) {
+      console.error("Blog loader hatası:", err);
+      return [];
+    }
   },
   head: () => ({
     meta: [
@@ -61,10 +70,10 @@ export const Route = createFileRoute("/blog")({
   }),
 });
 
-const CATEGORIES = ["Tümü", ...BLOG_CATEGORIES];
+const CATEGORIES = ["Tümü", ...(BLOG_CATEGORIES || [])];
 
 function BlogPage() {
-  const posts = Route.useLoaderData();
+  const posts = Route.useLoaderData() ?? [];
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("Tümü");
 
@@ -75,8 +84,8 @@ function BlogPage() {
       const query = search.trim().toLowerCase();
       const matchesSearch =
         query.length === 0 ||
-        post.title.toLowerCase().includes(query) ||
-        post.excerpt.toLowerCase().includes(query);
+        post.title?.toLowerCase().includes(query) ||
+        post.excerpt?.toLowerCase().includes(query);
       return matchesCategory && matchesSearch;
     });
   }, [posts, search, activeCategory]);
