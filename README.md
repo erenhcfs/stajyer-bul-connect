@@ -6,7 +6,9 @@ React, TanStack Start, Vite ve Supabase uygulaması. Aktif sayfalar `src/routes/
 
 Node.js 24 ile doğrulandı. `npm ci` çalıştırın, `.env.example` dosyasını `.env` olarak kopyalayıp Supabase değerlerini doldurun ve `npm run dev` çalıştırın.
 
-`VITE_SUPABASE_URL` ve `VITE_SUPABASE_ANON_KEY` (veya `VITE_SUPABASE_PUBLISHABLE_KEY`) değişince yeniden build gerekir. `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, isteğe bağlı `GEMINI_API_KEY` yalnızca sunucu ortamındadır; bunlara `VITE_` öneki eklemeyin. Yerel yönetim API'si için sunucu işleminin ortam değişkenlerini kullanın.
+`VITE_SUPABASE_URL` ve `VITE_SUPABASE_ANON_KEY` (veya `VITE_SUPABASE_PUBLISHABLE_KEY`) değişince yeniden build gerekir. `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, isteğe bağlı `GEMINI_API_KEY` yalnızca sunucu ortamındadır; bunlara `VITE_` öneki eklemeyin. Yerel yönetim API'si için sunucu işleminin ortam değişkenlerini kullanın.
+
+Blog şemasını Supabase SQL Editor'da `supabase/migrations/20260913000000_blog_system.sql` dosyasıyla kurun. Yayınlanan yazılar `/blog`, yönetim paneli `/blog-yonet`, dinamik site haritası `/sitemap.xml` adresindedir. AdSense reklam birimi kimlikleri `VITE_ADSENSE_BLOG_LIST_SLOT`, `VITE_ADSENSE_ARTICLE_TOP_SLOT` ve `VITE_ADSENSE_ARTICLE_BOTTOM_SLOT` değişkenlerinden alınır.
 
 ## Kontroller
 
@@ -41,7 +43,7 @@ Canlı Supabase anahtarları/şeması bu çalışma alanında bulunmadığından
 - Aday iletişim bilgilerinin görünürlüğü ve yayın izni RLS ile belirlenmeli. İletişim adresi okunamıyorsa e-posta akışı hata gösterir.
 - `avatars` bucket'ı; JPG/PNG/WebP, 5 MB sınırı, `auth.uid()/dosya` yükleme izni ve public URL okuma ayarı kontrol edilmeli.
 - Auth Site URL, `/profil` dönüş adresi, e-posta doğrulaması, Google/LinkedIn sağlayıcıları doğrulanmalı.
-- Yönetim sunucu değişkenleri doldurulmalı. Eski kaynak kodda bulunan şifreler tekrar kullanılmamalı. Gemini REST referansı: https://ai.google.dev/api/generate-content
+- Yönetim sunucu değişkenleri doldurulmalı. Üretimde tahmin edilmesi zor bir yönetici şifresi ve uzun, rastgele bir `ADMIN_SESSION_SECRET` kullanılmalı. Gemini REST referansı: https://ai.google.dev/api/generate-content
 
 ## Doğrulama sonucu
 

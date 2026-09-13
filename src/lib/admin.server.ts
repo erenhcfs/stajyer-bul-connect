@@ -42,6 +42,68 @@ function serviceClient() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
+function secureEqual(value: unknown, expected: string) {
+  return (
+    typeof value === "string" &&
+    Buffer.byteLength(value) === Buffer.byteLength(expected) &&
+    timingSafeEqual(Buffer.from(value), Buffer.from(expected))
+  );
+}
+
+type BlogBody = {
+  title?: unknown;
+  excerpt?: unknown;
+  content?: unknown;
+  category?: unknown;
+  image_url?: unknown;
+  keywords?: unknown;
+  author_name?: unknown;
+  author_initials?: unknown;
+  published?: unknown;
+  seo_title?: unknown;
+  seo_description?: unknown;
+};
+
+function blogPayload(body: BlogBody) {
+  if (
+    ![body.title, body.excerpt, body.content, body.category].every(
+      (value) => typeof value === "string" && value.trim(),
+    )
+  )
+    throw new TypeError("Başlık, özet, içerik ve kategori zorunlu.");
+  if (String(body.title).length > 180 || String(body.excerpt).length > 320)
+    throw new TypeError("Başlık veya özet izin verilen uzunluğu aşıyor.");
+  if (
+    body.image_url &&
+    (typeof body.image_url !== "string" || !/^https?:\/\//.test(body.image_url))
+  )
+    throw new TypeError("Görsel adresi http veya https ile başlamalı.");
+  const keywords = Array.isArray(body.keywords)
+    ? body.keywords.filter((value): value is string => typeof value === "string").slice(0, 20)
+    : [];
+  return {
+    title: String(body.title).trim(),
+    excerpt: String(body.excerpt).trim(),
+    content: String(body.content).trim(),
+    category: String(body.category).trim(),
+    author_name:
+      typeof body.author_name === "string" ? body.author_name.trim() : "Stajyer Bul Ekibi",
+    author_initials: typeof body.author_initials === "string" ? body.author_initials.trim() : "SB",
+    published: body.published !== false,
+    image_url:
+      typeof body.image_url === "string" && body.image_url.trim() ? body.image_url.trim() : null,
+    seo_title:
+      typeof body.seo_title === "string" && body.seo_title.trim()
+        ? body.seo_title.trim().slice(0, 70)
+        : null,
+    seo_description:
+      typeof body.seo_description === "string" && body.seo_description.trim()
+        ? body.seo_description.trim().slice(0, 180)
+        : null,
+    keywords: keywords.map((value) => value.trim()).filter(Boolean),
+  };
+}
+
 export async function handleAdminRequest(request: Request): Promise<Response | null> {
   const path = new URL(request.url).pathname;
   if (
@@ -66,16 +128,13 @@ export async function handleAdminRequest(request: Request): Promise<Response | n
     if (path === "/api/admin-check" && request.method === "GET")
       return json({ authenticated: authenticated(request.headers.get("cookie")) });
     if (path === "/api/admin-login" && request.method === "POST") {
-      const { password } = (await request.json()) ?? {};
-      const expected = process.env["ADMIN_PASSWORD"];
-      if (!expected || !process.env["ADMIN_SESSION_SECRET"])
+      const { username, password } = (await request.json()) ?? {};
+      const expectedUsername = process.env["ADMIN_USERNAME"] || "admin";
+      const expectedPassword = process.env["ADMIN_PASSWORD"];
+      if (!expectedPassword || !process.env["ADMIN_SESSION_SECRET"])
         return json({ error: "Yönetici giriş ayarları eksik." }, 503);
-      if (
-        typeof password !== "string" ||
-        Buffer.byteLength(password) !== Buffer.byteLength(expected) ||
-        !timingSafeEqual(Buffer.from(password), Buffer.from(expected))
-      )
-        return json({ error: "Şifre hatalı." }, 401);
+      if (!secureEqual(username, expectedUsername) || !secureEqual(password, expectedPassword))
+        return json({ error: "Kullanıcı adı veya şifre hatalı." }, 401);
       const payload = String(Date.now() + 12 * 3600_000);
       return json({ ok: true }, 200, {
         "Set-Cookie": sessionCookie(request, `${payload}.${signature(payload)}`, 12 * 3600),
@@ -106,7 +165,7 @@ export async function handleAdminRequest(request: Request): Promise<Response | n
               {
                 parts: [
                   {
-                    text: `StajyerBul için Türkçe kariyer makalesi yaz. Konu: ${prompt}. JSON nesnesinde title, excerpt (en fazla 160 karakter), content alanlarını döndür.`,
+                    text: `StajyerBul için Türkçe, özgün ve yararlı bir kariyer makalesi taslağı yaz. Konu: ${prompt}. Kesinleşmemiş gelecek bilgilerini tahmin gibi sunma; doğrulanması gereken noktaları açıkça belirt. Okunabilir ara başlıklar kullan. JSON nesnesinde title, excerpt (en fazla 160 karakter), seo_title (en fazla 60 karakter), seo_description (en fazla 160 karakter), keywords (en fazla 8 Türkçe kelime öbeği), content alanlarını döndür.`,
                   },
                 ],
               },
@@ -196,36 +255,22 @@ export async function handleAdminRequest(request: Request): Promise<Response | n
       }
       if (request.method === "POST") {
         const body = (await request.json()) ?? {};
-        if (
-          ![body.title, body.excerpt, body.content, body.category].every(
-            (v) => typeof v === "string" && v.trim(),
-          )
-        )
-          return json({ error: "Başlık, özet, içerik ve kategori zorunlu." }, 400);
+        let values;
+        try {
+          values = blogPayload(body);
+        } catch (error) {
+          return json({ error: error instanceof Error ? error.message : "Geçersiz makale." }, 400);
+        }
         const base = slugify(
           typeof body.slug === "string" && body.slug.trim() ? body.slug : body.title,
         );
         if (!base) return json({ error: "Geçerli bir başlık veya slug girin." }, 400);
-        if (
-          body.image_url &&
-          (typeof body.image_url !== "string" || !/^https?:\/\//.test(body.image_url))
-        )
-          return json({ error: "Görsel adresi http veya https ile başlamalı." }, 400);
         for (let i = 1; i <= 50; i++) {
           const { data, error } = await db
             .from("blog_posts")
             .insert({
-              title: body.title.trim(),
-              excerpt: body.excerpt.trim(),
-              content: body.content,
-              category: body.category,
+              ...values,
               slug: i === 1 ? base : `${base}-${i}`,
-              author_name:
-                typeof body.author_name === "string" ? body.author_name : "Stajyer Bul Ekibi",
-              author_initials:
-                typeof body.author_initials === "string" ? body.author_initials : "SB",
-              published: body.published !== false,
-              ...(body.image_url ? { image_url: body.image_url } : {}),
             })
             .select()
             .single();
@@ -233,6 +278,39 @@ export async function handleAdminRequest(request: Request): Promise<Response | n
           if (error.code !== "23505") throw error;
         }
         return json({ error: "Bu slug kullanılıyor. Başka bir slug seçin." }, 409);
+      }
+      if (request.method === "PATCH") {
+        const body = (await request.json()) ?? {};
+        if (typeof body.id !== "string" || !/^[0-9a-f-]{36}$/i.test(body.id))
+          return json({ error: "Geçersiz yazı." }, 400);
+        let values;
+        try {
+          values = blogPayload(body);
+        } catch (error) {
+          return json({ error: error instanceof Error ? error.message : "Geçersiz makale." }, 400);
+        }
+        const slug = slugify(
+          typeof body.slug === "string" && body.slug.trim() ? body.slug : values.title,
+        );
+        if (!slug) return json({ error: "Geçerli bir slug girin." }, 400);
+        const { data, error } = await db
+          .from("blog_posts")
+          .update({ ...values, slug })
+          .eq("id", body.id)
+          .select()
+          .single();
+        if (error?.code === "23505")
+          return json({ error: "Bu slug başka bir yazıda kullanılıyor." }, 409);
+        if (error) throw error;
+        return json({ post: data });
+      }
+      if (request.method === "DELETE") {
+        const body = (await request.json()) ?? {};
+        if (typeof body.id !== "string" || !/^[0-9a-f-]{36}$/i.test(body.id))
+          return json({ error: "Geçersiz yazı." }, 400);
+        const { error } = await db.from("blog_posts").delete().eq("id", body.id);
+        if (error) throw error;
+        return json({ ok: true });
       }
     }
     return json({ error: "Yöntem desteklenmiyor." }, 405);

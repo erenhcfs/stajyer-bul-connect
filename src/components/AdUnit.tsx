@@ -17,16 +17,19 @@ type AdUnitProps = {
 
 export function AdUnit({ slot, format = "auto", className = "" }: AdUnitProps) {
   const pushed = useRef(false);
+  const validSlot = /^\d+$/.test(slot) && !/^0+$/.test(slot);
 
   useEffect(() => {
-    if (pushed.current) return;
+    if (pushed.current || !validSlot) return;
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
       pushed.current = true;
     } catch (err) {
       console.error("AdSense yüklenemedi:", err);
     }
-  }, []);
+  }, [validSlot]);
+
+  if (!validSlot) return null;
 
   return (
     <ins

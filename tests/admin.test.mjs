@@ -19,7 +19,10 @@ const call = (path, method = "GET", body, cookie, origin) =>
     }),
   );
 async function login() {
-  const response = await call("admin-login", "POST", { password: "test-password" });
+  const response = await call("admin-login", "POST", {
+    username: "admin",
+    password: "test-password",
+  });
   assert.equal(response.status, 200);
   return response.headers.get("set-cookie").split(";")[0];
 }
@@ -35,9 +38,21 @@ test("wrong and malformed passwords never establish a session", async () => {
   for (const password of ["wrong", 123, null, "ş".repeat(13)])
     assert.equal((await call("admin-login", "POST", { password })).status, 401);
   assert.equal((await call("admin-login", "POST", null)).status, 401);
+  assert.equal(
+    (
+      await call("admin-login", "POST", {
+        username: "someone-else",
+        password: "test-password",
+      })
+    ).status,
+    401,
+  );
 });
 test("valid cookie is HttpOnly, Secure, and recognized by both panels", async () => {
-  const response = await call("admin-login", "POST", { password: "test-password" });
+  const response = await call("admin-login", "POST", {
+    username: "admin",
+    password: "test-password",
+  });
   assert.match(response.headers.get("set-cookie"), /HttpOnly; SameSite=Strict/);
   assert.match(response.headers.get("set-cookie"), /Secure/);
   const cookie = response.headers.get("set-cookie").split(";")[0];

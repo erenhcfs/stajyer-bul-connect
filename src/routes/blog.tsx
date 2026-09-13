@@ -9,6 +9,7 @@ import {
   Mail,
   BookOpen,
   TrendingUp,
+  Eye,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -40,7 +41,7 @@ export const Route = createFileRoute("/blog")({
     if (error) throw new Error("Blog yüklenemedi. Lütfen yeniden deneyin.");
     return (data ?? []) as BlogPost[];
   },
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Blog | Stajyer Bul - Staj ve Kariyer Rehberi" },
       {
@@ -55,8 +56,29 @@ export const Route = createFileRoute("/blog")({
         content: "Staj başvuru süreçleri, mülakat ipuçları ve kariyer planlama rehberleri.",
       },
       { property: "og:url", content: `${SITE_URL}/blog` },
+      { name: "robots", content: "index, follow, max-image-preview:large" },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/blog` }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Stajyer Bul Blog ve Kariyer Rehberi",
+          url: `${SITE_URL}/blog`,
+          mainEntity: {
+            "@type": "ItemList",
+            itemListElement: (loaderData ?? []).slice(0, 20).map((post, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              url: `${SITE_URL}/blog/${encodeURIComponent(post.slug)}`,
+              name: post.title,
+            })),
+          },
+        }),
+      },
+    ],
   }),
 });
 
@@ -66,18 +88,25 @@ function BlogPage() {
   const posts = Route.useLoaderData();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("Tümü");
+  const [sort, setSort] = useState<"newest" | "popular">("newest");
 
   const filteredPosts = useMemo(() => {
-    return posts.filter((post) => {
-      const matchesCategory = activeCategory === "Tümü" || post.category === activeCategory;
-      const query = search.trim().toLowerCase();
-      const matchesSearch =
-        query.length === 0 ||
-        post.title?.toLowerCase().includes(query) ||
-        post.excerpt?.toLowerCase().includes(query);
-      return matchesCategory && matchesSearch;
-    });
-  }, [posts, search, activeCategory]);
+    return posts
+      .filter((post) => {
+        const matchesCategory = activeCategory === "Tümü" || post.category === activeCategory;
+        const query = search.trim().toLowerCase();
+        const matchesSearch =
+          query.length === 0 ||
+          post.title?.toLowerCase().includes(query) ||
+          post.excerpt?.toLowerCase().includes(query);
+        return matchesCategory && matchesSearch;
+      })
+      .sort((a, b) =>
+        sort === "popular"
+          ? (b.view_count ?? 0) - (a.view_count ?? 0)
+          : new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+  }, [posts, search, activeCategory, sort]);
 
   const featuredPost = posts[0];
 
@@ -137,10 +166,27 @@ function BlogPage() {
                       : "border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                 >
-                  {category}
+                  {category} (
+                  {category === "Tümü"
+                    ? posts.length
+                    : posts.filter((post) => post.category === category).length}
+                  )
                 </button>
               );
             })}
+          </div>
+          <div className="mt-5 flex justify-center">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              Sıralama
+              <select
+                value={sort}
+                onChange={(event) => setSort(event.target.value as "newest" | "popular")}
+                className="rounded-lg border bg-background px-3 py-2 text-foreground"
+              >
+                <option value="newest">En yeni</option>
+                <option value="popular">En çok okunan</option>
+              </select>
+            </label>
           </div>
         </section>
 
@@ -187,6 +233,10 @@ function BlogPage() {
                             <Clock className="size-3" />
                             {estimateReadTime(featuredPost.content)}
                           </span>
+                          <span>·</span>
+                          <span className="inline-flex items-center gap-1">
+                            <Eye className="size-3" /> {featuredPost.view_count ?? 0}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -232,10 +282,14 @@ function BlogPage() {
                           </Avatar>
                           <span>{post.author_name}</span>
                         </div>
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="size-3" />
-                          {estimateReadTime(post.content)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1">
+                            <Eye className="size-3" /> {post.view_count ?? 0}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="size-3" /> {estimateReadTime(post.content)}
+                          </span>
+                        </div>
                       </CardFooter>
                     </Card>
                   </Link>
@@ -243,7 +297,10 @@ function BlogPage() {
                   {/* Her 6 karttan sonra bir reklam bloğu */}
                   {(index + 1) % 6 === 0 && (
                     <div className="sm:col-span-2 lg:col-span-3">
-                      <AdUnit slot="0000000000" className="min-h-[120px]" />
+                      <AdUnit
+                        slot={import.meta.env["VITE_ADSENSE_BLOG_LIST_SLOT"] || ""}
+                        className="min-h-[120px]"
+                      />
                     </div>
                   )}
                 </Fragment>

@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Loader2, Calendar, User, ArrowLeft, Share2, Tag, Sparkles } from "lucide-react";
+import { Calendar, ArrowLeft, Share2, Tag, Sparkles, Eye, Clock } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
-import { type BlogPost } from "@/lib/blog-helpers";
+import { estimateReadTime, type BlogPost } from "@/lib/blog-helpers";
+import { AdUnit } from "@/components/AdUnit";
+
+const SITE_URL = "https://stajyerbul.com.tr";
 
 export const Route = createFileRoute("/blog_/$slug")({
   component: BlogDetailPage,
@@ -23,10 +26,13 @@ export const Route = createFileRoute("/blog_/$slug")({
   },
   head: ({ loaderData }) => {
     // Google SEO ve Arama Motoru Optimizasyonu için Dinamik Head Meta Etiketleri
-    const title = loaderData?.title
-      ? `${loaderData.title} | Stajyer Bul`
-      : "Blog Detayı | Stajyer Bul";
-    const description = loaderData?.excerpt || "Staj ve kariyer rehberi içerikleri.";
+    const title = loaderData?.seo_title
+      ? loaderData.seo_title
+      : loaderData?.title
+        ? `${loaderData.title} | Stajyer Bul`
+        : "Blog Detayı | Stajyer Bul";
+    const description =
+      loaderData?.seo_description || loaderData?.excerpt || "Staj ve kariyer rehberi içerikleri.";
     const image = loaderData?.image_url || "https://stajyerbul.com.tr/logo.png";
     const url = `https://stajyerbul.com.tr/blog/${encodeURIComponent(loaderData?.slug || "")}`;
 
@@ -45,6 +51,10 @@ export const Route = createFileRoute("/blog_/$slug")({
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: description },
         { name: "twitter:image", content: image },
+        { name: "robots", content: "index, follow, max-image-preview:large" },
+        ...(loaderData?.keywords?.length
+          ? [{ name: "keywords", content: loaderData.keywords.join(", ") }]
+          : []),
       ],
       // Google'ın içeriği daha iyi anlaması için Schema.org JSON-LD Yapısal Verisi
       scripts: loaderData
@@ -56,12 +66,32 @@ export const Route = createFileRoute("/blog_/$slug")({
                 "@type": "BlogPosting",
                 headline: loaderData.title,
                 description: loaderData.excerpt,
-                image: loaderData.image_url,
+                image: loaderData.image_url ? [loaderData.image_url] : undefined,
                 author: {
-                  "@type": "Person",
+                  "@type": "Organization",
                   name: loaderData.author_name || "Stajyer Bul Ekibi",
                 },
+                publisher: {
+                  "@type": "Organization",
+                  name: "Stajyer Bul",
+                  logo: { "@type": "ImageObject", url: `${SITE_URL}/logo.png` },
+                },
                 datePublished: loaderData.created_at,
+                dateModified: loaderData.updated_at || loaderData.created_at,
+                mainEntityOfPage: { "@type": "WebPage", "@id": url },
+                keywords: loaderData.keywords?.join(", "),
+              }),
+            },
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: SITE_URL },
+                  { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
+                  { "@type": "ListItem", position: 3, name: loaderData.title, item: url },
+                ],
               }),
             },
           ]
@@ -73,6 +103,7 @@ export const Route = createFileRoute("/blog_/$slug")({
 function BlogDetailPage() {
   const post = Route.useLoaderData();
   const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
+  const [viewCount, setViewCount] = useState(post.view_count ?? 0);
   useEffect(() => {
     let active = true;
     setRecentPosts([]);
@@ -89,6 +120,15 @@ function BlogDetailPage() {
     return () => {
       active = false;
     };
+  }, [post.slug]);
+
+  useEffect(() => {
+    const key = `blog-viewed:${post.slug}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    void supabase.rpc("increment_blog_view", { post_slug: post.slug }).then(({ data }) => {
+      if (typeof data === "number") setViewCount(data);
+    });
   }, [post.slug]);
 
   if (!post) {
@@ -142,6 +182,12 @@ function BlogDetailPage() {
                 year: "numeric",
               })}
             </span>
+            <span className="flex items-center gap-1 text-xs">
+              <Clock className="size-3.5" /> {estimateReadTime(post.content)} okuma
+            </span>
+            <span className="flex items-center gap-1 text-xs">
+              <Eye className="size-3.5" /> {viewCount} görüntülenme
+            </span>
           </div>
 
           {/* Makale Başlığı (H1 - Google SEO için hayati önem taşır) */}
@@ -191,19 +237,19 @@ function BlogDetailPage() {
           )}
 
           {/* GOOGLE ADS / ADSENSE ALANI (Makale Üstü Reklam Slotu) */}
-          <div className="my-6 rounded-2xl border border-dashed bg-muted/40 p-4 text-center text-xs text-muted-foreground">
-            <span>[ Google Ads / AdSense Reklam Alanı ]</span>
-          </div>
+          <AdUnit
+            slot={import.meta.env["VITE_ADSENSE_ARTICLE_TOP_SLOT"] || ""}
+            className="my-6 min-h-[120px]"
+          />
 
           {/* Makale İçeriği (Paragraflar halinde mükemmel okunabilirlik) */}
-          <div className="prose prose-slate max-w-none text-foreground/90 leading-relaxed space-y-6 text-base sm:text-lg whitespace-pre-line font-normal">
-            {post.content}
-          </div>
+          <ArticleContent content={post.content} />
 
           {/* GOOGLE ADS / ADSENSE ALANI (Makale Altı Reklam Slotu) */}
-          <div className="my-10 rounded-2xl border border-dashed bg-muted/40 p-4 text-center text-xs text-muted-foreground">
-            <span>[ Google Ads / AdSense Reklam Alanı ]</span>
-          </div>
+          <AdUnit
+            slot={import.meta.env["VITE_ADSENSE_ARTICLE_BOTTOM_SLOT"] || ""}
+            className="my-10 min-h-[120px]"
+          />
 
           {/* İlgili / Diğer Yazılar (SEO İç Linkleme Gücü) */}
           {recentPosts.length > 0 && (
@@ -240,6 +286,48 @@ function BlogDetailPage() {
       </main>
 
       <Footer />
+    </div>
+  );
+}
+
+function ArticleContent({ content }: { content: string }) {
+  return (
+    <div className="space-y-5 text-base leading-8 text-foreground/90 sm:text-lg">
+      {content
+        .split(/\n\s*\n/)
+        .map((block) => block.trim())
+        .filter(Boolean)
+        .map((block, index) => {
+          if (block.startsWith("### "))
+            return (
+              <h3 key={index} className="pt-3 text-xl font-bold text-foreground">
+                {block.slice(4)}
+              </h3>
+            );
+          if (block.startsWith("## "))
+            return (
+              <h2
+                key={index}
+                className="pt-5 text-2xl font-extrabold tracking-tight text-foreground"
+              >
+                {block.slice(3)}
+              </h2>
+            );
+          const lines = block.split("\n");
+          if (lines.every((line) => /^[-*] /.test(line)))
+            return (
+              <ul key={index} className="list-disc space-y-2 pl-6">
+                {lines.map((line, lineIndex) => (
+                  <li key={lineIndex}>{line.slice(2)}</li>
+                ))}
+              </ul>
+            );
+          return (
+            <p key={index} className="whitespace-pre-line">
+              {block}
+            </p>
+          );
+        })}
     </div>
   );
 }

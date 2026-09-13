@@ -9,7 +9,12 @@ export type BlogPost = {
   author_name: string;
   author_initials: string;
   published: boolean;
+  view_count: number;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  keywords?: string[] | null;
   created_at: string;
+  updated_at?: string | null;
 };
 
 export const BLOG_CATEGORIES = [
