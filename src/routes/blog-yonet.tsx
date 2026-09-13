@@ -38,27 +38,27 @@ function BlogYonetimPage() {
   if (loadingCheck) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        <Loader2 className="size-6 animate-spin text-muted-foreground"/>
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Navbar />
+      <Navbar/>
       <main className="flex-1">
         <div className="container-x max-w-4xl py-12">
           {authed ? (
-            <AdminPanel onLogout={() => {
+            <AdminPanel onLogout="{()"> {
               localStorage.removeItem("stajyerbul_admin_auth");
               setAuthed(false);
             }} />
           ) : (
-            <LoginForm onSuccess={() => setAuthed(true)} />
+            <LoginForm onSuccess="{()"> setAuthed(true)} />
           )}
         </div>
       </main>
-      <Footer />
+      <Footer/>
     </div>
   );
 }
@@ -84,7 +84,7 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
     <Card className="mx-auto max-w-md shadow-lg border-border/85">
       <CardHeader className="items-center text-center pb-2">
         <div className="grid size-12 place-items-center rounded-full bg-primary/10 mb-2">
-          <Lock className="size-6 text-primary" />
+          <Lock className="size-6 text-primary"/>
         </div>
         <h1 className="text-xl font-bold tracking-tight">SEO Blog Yönetim Paneli</h1>
         <p className="text-sm text-muted-foreground">
@@ -95,31 +95,20 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5 text-left">
             <Label htmlFor="username">Kullanıcı Adı</Label>
-            <Input
-              id="username"
-              type="text"
-              required
-              autoFocus
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+            <Input autoFocus id="username" onChange="{(e)" required type="text" value="{username}"> setUsername(e.target.value)}
               placeholder="admin"
               className="h-11 rounded-xl"
             />
           </div>
           <div className="flex flex-col gap-1.5 text-left">
             <Label htmlFor="password">Şifre</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+            <Input id="password" onChange="{(e)" required type="password" value="{password}"> setPassword(e.target.value)}
               placeholder="••••"
               className="h-11 rounded-xl"
             />
           </div>
           {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-          <Button type="submit" className="h-11 rounded-xl gap-2 mt-2 font-semibold">
+          <Button className="h-11 rounded-xl gap-2 mt-2 font-semibold" type="submit">
             Giriş Yap
           </Button>
         </form>
@@ -148,7 +137,6 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
 
-  // Gelişmiş Gemini AI State'leri
   const [aiPrompt, setAiPrompt] = useState("");
   const [generatingAi, setGeneratingAi] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
@@ -174,10 +162,9 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     }));
   }
 
-  // Google Arama Destekli Gelişmiş Gemini SEO Makale Üreticisi
   async function handleGenerateAdvancedGemini() {
     if (!aiPrompt.trim()) {
-      setAiError("Lütfen yapay zeka için bir konu veya arama terimi yazın.");
+      setAiError("Lütfen yapay zeka için bir konu yazın.");
       return;
     }
 
@@ -192,51 +179,254 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        `[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$){apiKey}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [
               {
                 parts: [
                   {
-                    text: `Sen kıdemli bir SEO uzmanı ve içerik yazarısın. "Stajyer Bul" platformu için şu konuda kapsamlı bir araştırma yap ve özgün bir blog yazısı kaleme al: "${aiPrompt}".
-                    
-                    Yönergelere kesinlikle uy:
-                    1. Önce Google arama aracını kullanarak web'deki güncel yazıları, rehberleri ve tahmini rakamları (maaşlar, oranlar vb.) tara, en iyi içeriklerin kalitesinden ilham al.
-                    2. Kesinlikle kopyala-yapıştır yapma; bilgileri sentezleyerek tamamen özgün, akıcı, profesyonel ve Google SEO kurallarına (H1, alt başlıklar, maddeler) tam uyumlu bir makale yaz.
-                    3. Çıktıyı SADECE ve SADECE şu saf JSON formatında ver (Markdown veya başka hiçbir metin ekleme):
+                    text: `Sen kıdemli bir SEO uzmanısın. "Stajyer Bul" platformu için şu konuda özgün bir blog yazısı yaz: "${aiPrompt}". 
+                    Çıktıyı SADECE ve SADECE şu saf JSON formatında ver (Markdown ekleme):
                     {
-                      "title": "Google SEO uyumlu, dikkat çekici H1 başlık",
-                      "excerpt": "Google arama sonuçları için en fazla 160 karakterlik meta açıklama",
-                      "content": "Markdown formatında, ### alt başlıklar, detaylı paragraflar ve listeler içeren eksiksiz makale içeriği"
+                      "title": "SEO uyumlu H1 başlık",
+                      "excerpt": "En fazla 160 karakterlik meta açıklama",
+                      "content": "Markdown formatında detaylı makale içeriği"
                     }`
                   }
                 ]
               }
             ],
-            // Google Arama Grounding: Web'deki mevcut içerikleri tarayıp analiz etmesini sağlar
-            tools: [
-              {
-                googleSearch: {}
-              }
-            ]
+            tools: [{ googleSearch: {} }]
           }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Gemini API bağlantı hatası oluştu.");
-      }
+      if (!response.ok) throw new Error("Gemini API hatası.");
 
       const data = await response.json();
       const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!textResult) throw new Error("İçerik alınamadı.");
 
-      if (!textResult) {
-        throw new Error("Yapay zekadan içerik alınamadı.");
+      const cleanJsonStr = textResult.replace(/```json/g, "").replace(/```/g, "").trim();
+      const parsedData = JSON.parse(cleanJsonStr);
+
+      const generatedTitle = parsedData.title || aiPrompt;
+      const generatedSlug = generatedTitle
+        .toLowerCase()
+        .replace(/ğ/g, "g")
+        .replace(/ü/g, "u")
+        .replace(/ş/g, "s")
+        .replace(/ı/g, "i")
+        .replace(/ö/g, "o")
+        .replace(/ç/g, "c")
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
+
+      setForm((prev) => ({
+        ...prev,
+        title: generatedTitle,
+        slug: generatedSlug,
+        excerpt: parsedData.excerpt || "",
+        content: parsedData.content || "",
+      }));
+
+      await handleGenerateOriginalImage(generatedTitle);
+      setAiPrompt("");
+    } catch (err: any) {
+      console.error(err);
+      setAiError("Makale üretilirken hata oluştu.");
+    } finally {
+      setGeneratingAi(false);
+    }
+  }
+
+  async function handleGenerateOriginalImage(topicTitle: string) {
+    setGeneratingImage(true);
+    try {
+      await new Promise((r) => setTimeout(r, 800));
+      let img = "[https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80](https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80)";
+      const lower = topicTitle.toLowerCase();
+      if (lower.includes("cnc") || lower.includes("makine")) {
+        img = "[https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80](https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80)";
+      }
+      setForm((prev) => ({ ...prev, image_url: img }));
+    } finally {
+      setGeneratingImage(false);
+    }
+  }
+
+  async function loadPosts() {
+    setLoadingPosts(true);
+    try {
+      const { data } = await supabase.from("blog_posts").select("*").order("created_at", { ascending: false });
+      setPosts((data ?? []) as BlogPost[]);
+    } finally {
+      setLoadingPosts(false);
+    }
+  }
+
+  useEffect(() => { loadPosts(); }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const insertData: any = {
+        title: form.title,
+        slug: form.slug,
+        excerpt: form.excerpt,
+        content: form.content,
+        category: form.category,
+        author_name: form.author_name,
+        author_initials: form.author_initials,
+        published: form.published,
+      };
+
+      if (form.image_url.trim()) {
+        insertData.image_url = form.image_url.trim();
       }
 
-      const cleanJsonStr = textResult.replace(/```json/g, "").replace(/
+      const { data, error: err } = await supabase.from("blog_posts").insert([insertData]).select().single();
+      if (err) throw err;
+
+      setSuccess(`Yazı başarıyla yayınlandı: ${data.title}`);
+      setForm(emptyForm);
+      loadPosts();
+    } catch (err: any) {
+      setError(err.message || "Kayıt sırasında hata oluştu.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="space-y-10">
+      <div className="flex items-center justify-between border-b pb-4">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+            <Sparkles className="size-6 text-primary" /> Blog Yönetim Paneli
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            İster manuel yazın, ister yapay zeka ile otomatik yayınlayın.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={onLogout} className="gap-1.5 rounded-xl">
+          <LogOut className="size-4" /> Çıkış Yap
+        </Button>
+      </div>
+
+      <Card className="border-primary/40 bg-primary/5 shadow-md">
+        <CardHeader className="pb-3">
+          <h2 className="text-base font-bold flex items-center gap-2 text-primary">
+            <Bot className="size-5" /> Yapay Zeka Asistanı
+          </h2>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            placeholder="Örn: 2027 MESEM maaşları ne kadar olacak..."
+            rows={3}
+            className="rounded-xl bg-background"
+          />
+          <div className="flex justify-end">
+            <Button 
+              type="button" 
+              onClick={handleGenerateAdvancedGemini} 
+              disabled={generatingAi || generatingImage}
+              className="h-11 rounded-xl gap-2 font-bold px-6"
+            >
+              {generatingAi || generatingImage ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
+              {generatingAi ? "Yazılıyor..." : "AI ile Makale Üret"}
+            </Button>
+          </div>
+          {aiError && <p className="text-xs font-medium text-destructive">{aiError}</p>}
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/80 shadow-sm">
+        <CardHeader className="pb-4 border-b bg-muted/20">
+          <h2 className="text-base font-bold flex items-center gap-2">
+            <FileText className="size-4 text-primary" /> Makale Formu
+          </h2>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="title">Başlık (H1)</Label>
+              <Input
+                id="title"
+                required
+                value={form.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="Makale başlığı..."
+                className="h-11 rounded-xl"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="slug">Slug (URL)</Label>
+              <Input
+                id="slug"
+                required
+                value={form.slug}
+                onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                className="h-11 rounded-xl font-mono text-sm"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="image_url">Kapak Görseli URL</Label>
+              <Input
+                id="image_url"
+                value={form.image_url}
+                onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+                className="h-11 rounded-xl"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="excerpt">Meta Özet (max 160 karakter)</Label>
+              <Textarea
+                id="excerpt"
+                required
+                rows={2}
+                maxLength={160}
+                value={form.excerpt}
+                onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
+                className="rounded-xl"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="content">Makale İçeriği (Markdown)</Label>
+              <Textarea
+                id="content"
+                required
+                rows={12}
+                value={form.content}
+                onChange={(e) => setForm({ ...form, content: e.target.value })}
+                className="rounded-xl font-sans"
+              />
+            </div>
+
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+            {success && <p className="text-sm font-semibold text-emerald-600 bg-emerald-500/10 p-3 rounded-xl">{success}</p>}
+
+            <Button type="submit" disabled={submitting} className="h-12 rounded-xl gap-2 font-bold text-base">
+              {submitting && <Loader2 className="size-5 animate-spin" />}
+              <Globe className="size-5" /> Makaleyi Yayınla
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
