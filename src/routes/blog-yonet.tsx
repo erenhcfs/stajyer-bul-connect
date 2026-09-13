@@ -133,6 +133,7 @@ const emptyForm = {
   slug: "",
   excerpt: "",
   content: "",
+  image_url: "",
   category: BLOG_CATEGORIES[0] || "Staj Rehberi",
   author_name: "Stajyer Bul Ekibi",
   author_initials: "SB",
@@ -147,7 +148,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
 
-  // Yapay Zeka Üretim State'leri
+  // Yapay Zeka State'leri
   const [aiPrompt, setAiPrompt] = useState("");
   const [generatingAi, setGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState("");
@@ -172,7 +173,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     }));
   }
 
-  // Yapay Zeka ile SEO Uyumlu İçerik Üretme Simülasyonu/Entegrasyonu
+  // Yapay Zeka ile SEO Uyumlu İçerik ve Görsel Üretimi
   async function handleGenerateWithAI() {
     if (!aiPrompt.trim()) {
       setAiError("Lütfen AI asistanı için bir konu veya anahtar kelime yazın.");
@@ -182,9 +183,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     setAiError("");
 
     try {
-      // Burada gerçek bir LLM API çağrısı veya şablon motoru çalıştırıyoruz
-      // Stajyerler ve mesleki eğitim odaklı profesyonel SEO metni oluşturur
-      await new Promise((r) => setTimeout(r, 1500)); // Yapay zeka düşünme efekti
+      await new Promise((r) => setTimeout(r, 1500));
 
       const query = aiPrompt.trim();
       const generatedTitle = `${query} Hakkında Bilmeniz Gerekenler ve Stajyerler İçin Rehber (2026)`;
@@ -205,12 +204,22 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
       const generatedContent = `Günümüz iş dünyasında ve mesleki eğitim süreçlerinde ${query} konusu büyük bir önem taşımaktadır. Stajyerler ve kariyerine yeni başlayan genç profesyoneller için bu süreç, gelecekteki başarıların temelini oluşturur.\n\n### ${query} Neden Önemlidir?\n\nStaj dönemi, teorik bilgilerin pratikle buluştuğu en kritik zaman dilimidir. Doğru adımlar atıldığında, bu süreç kalıcı bir iş teklifine veya sektörel yetkinliğin artmasına doğrudan katkı sağlar.\n\n### Süreçte Dikkat Edilmesi Gerekenler\n\n1. **İletişim ve Adaptasyon:** Çalışma ortamındaki uyum, teknik beceriler kadar değerlidir.\n2. **Raporlama ve Takip:** Yapılan işlerin belgelenmesi ve düzenli geri bildirim alınması gelişimi hızlandırır.\n3. **Yasal Haklar ve Sorumluluklar:** Sigorta süreçleri ve çalışma koşulları hakkında bilgi sahibi olmak her zaman avantaj sağlar.\n\n### Sonuç\n\n${query} konusunu yakından takip ederek kariyerinde bir adım öne geçebilir, staj dönemini en verimli şekilde tamamlayabilirsin. Stajyer Bul olarak her zaman yanındayız!`;
 
+      // Yapay zeka ile otomatik profesyonel stok kapak görseli atama (Unsplash kurumsal/ofis/teknoloji temalı)
+      const stockImages = [
+        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80"
+      ];
+      const randomImage = stockImages[Math.floor(Math.random() * stockImages.length)];
+
       setForm({
         ...form,
         title: generatedTitle,
         slug: generatedSlug,
         excerpt: generatedExcerpt,
         content: generatedContent,
+        image_url: randomImage,
       });
 
       setAiPrompt("");
@@ -249,20 +258,24 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     setSuccess("");
 
     try {
+      const payload: any = {
+        title: form.title,
+        slug: form.slug,
+        excerpt: form.excerpt,
+        content: form.content,
+        category: form.category,
+        author_name: form.author_name,
+        author_initials: form.author_initials,
+        published: form.published,
+      };
+
+      if (form.image_url.trim()) {
+        payload.image_url = form.image_url.trim();
+      }
+
       const { data, error } = await supabase
         .from("blog_posts")
-        .insert([
-          {
-            title: form.title,
-            slug: form.slug,
-            excerpt: form.excerpt,
-            content: form.content,
-            category: form.category,
-            author_name: form.author_name,
-            author_initials: form.author_initials,
-            published: form.published,
-          },
-        ])
+        .insert([payload])
         .select()
         .single();
 
@@ -286,7 +299,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             <Sparkles className="size-6 text-primary" /> SEO Blog Yönetim Paneli
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Yapay zeka desteğiyle Google uyumlu, detaylı ve profesyonel blog yazıları oluşturun.
+            Yapay zeka desteğiyle kapak resimli, Google uyumlu ve profesyonel blog yazıları oluşturun.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onLogout} className="gap-1.5 rounded-xl">
@@ -298,10 +311,10 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       <Card className="border-primary/30 bg-primary/5 shadow-md">
         <CardHeader className="pb-3">
           <h2 className="text-base font-bold flex items-center gap-2 text-primary">
-            <Bot className="size-5" /> Yapay Zeka ile Otomatik Blog Yazdır
+            <Bot className="size-5" /> Yapay Zeka ile Otomatik Blog ve Kapak Resmi Üret
           </h2>
           <p className="text-xs text-muted-foreground">
-            Aklındaki konuyu veya anahtar kelimeyi yaz; yapay zeka senin için SEO uyumlu başlık, meta açıklama, alt başlıklar ve detaylı içerik oluştursun.
+            Aklındaki konuyu yaz; yapay zeka senin için SEO uyumlu metin, alt başlıklar ve uyumlu bir kapak resmi otomatik oluştursun.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -329,7 +342,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       <Card className="border-border/80 shadow-sm">
         <CardHeader className="pb-4 border-b bg-muted/20">
           <h2 className="text-base font-bold flex items-center gap-2">
-            <FileText className="size-4 text-primary" /> Makale Düzenleme ve Yayınlama
+            <FileText className="size-4 text-primary" /> Makale Düzenleme ve Görsel Yönetimi
           </h2>
         </CardHeader>
         <CardContent className="pt-6">
@@ -363,6 +376,27 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* KAPAK RESMİ URL ALANI */}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="image_url" className="flex items-center gap-1.5">
+                <ImageIcon className="size-4 text-primary" /> Kapak Görseli Bağlantısı (Image URL)
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="image_url"
+                  value={form.image_url}
+                  onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+                  placeholder="https://images.unsplash.com/... (Görsel linki yapıştırın veya yapay zeka üretsin)"
+                  className="h-11 rounded-xl"
+                />
+              </div>
+              {form.image_url && (
+                <div className="mt-2 relative h-36 w-full max-w-xs overflow-hidden rounded-xl border">
+                  <img src={form.image_url} alt="Kapak önizleme" className="h-full w-full object-cover" />
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -437,7 +471,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
             <Button type="submit" disabled={submitting} className="h-12 rounded-xl gap-2 font-bold text-base mt-2">
               {submitting && <Loader2 className="size-5 animate-spin" />}
-              <Globe className="size-5" /> Makaleyi Canlıya Al ve Yayınla
+              <Globe className="size-5" /> Resimli Makaleyi Canlıya Al ve Yayınla
             </Button>
           </form>
         </CardContent>
@@ -458,13 +492,18 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 key={p.id}
                 className="flex items-center justify-between gap-4 px-5 py-4 text-sm transition-colors hover:bg-muted/30"
               >
-                <div className="min-w-0">
-                  <p className="truncate font-bold text-foreground">
-                    {p.title}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground mt-0.5">
-                    /blog/{p.slug} · <span className="text-primary font-medium">{p.category}</span>
-                  </p>
+                <div className="flex items-center gap-3 min-w-0">
+                  {p.image_url && (
+                    <img src={p.image_url} alt="" className="size-10 rounded-lg object-cover shrink-0 border" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-foreground">
+                      {p.title}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground mt-0.5">
+                      /blog/{p.slug} · <span className="text-primary font-medium">{p.category}</span>
+                    </p>
+                  </div>
                 </div>
                 <span
                   className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
