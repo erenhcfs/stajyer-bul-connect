@@ -23,12 +23,12 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       {
-        title: "StajyerBul | Staj Bul ve Stajyer Bul",
+        title: "StajyerBul | Staj Arayanlar ve İşletmelerin Buluşma Noktası",
       },
       {
         name: "description",
         content:
-          "StajyerBul, staj arayan öğrenciler ile stajyer arayan işletmeleri buluşturan platformdur. Staj ilanlarını keşfedin, stajyer adaylarına ulaşın ve doğru eşleşmeyi bulun.",
+          "StajyerBul, staj arayan öğrenciler ile stajyer arayan işletmeleri buluşturan güvenilir platformdur. Staj ilanlarını keşfedin, stajyer adaylarına ulaşın ve hemen başvurun.",
       },
       {
         name: "keywords",
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:title",
-        content: "StajyerBul | Staj Bul ve Stajyer Bul",
+        content: "StajyerBul | Staj Arayanlar ve İşletmelerin Buluşma Noktası",
       },
       {
         property: "og:description",
@@ -49,17 +49,25 @@ export const Route = createFileRoute("/")({
         content: "website",
       },
       {
+        property: "og:image",
+        content: "https://stajyerbul.com.tr/og-image.jpg",
+      },
+      {
         name: "twitter:card",
         content: "summary_large_image",
       },
       {
         name: "twitter:title",
-        content: "StajyerBul | Staj Bul ve Stajyer Bul",
+        content: "StajyerBul | Staj Arayanlar ve İşletmelerin Buluşma Noktası",
       },
       {
         name: "twitter:description",
         content:
           "Staj arayan öğrenciler ile stajyer arayan işletmeleri buluşturan platform.",
+      },
+      {
+        name: "twitter:image",
+        content: "https://stajyerbul.com.tr/og-image.jpg",
       },
     ],
   }),
