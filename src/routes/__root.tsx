@@ -147,17 +147,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    // Auto ads mutate the head and body. Load only after React has hydrated them.
+    if (document.getElementById("stajyerbul-adsense")) return;
+    const script = document.createElement("script");
+    script.id = "stajyerbul-adsense";
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    script.src =
+      "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2311108731423361";
+    document.head.appendChild(script);
+  }, []);
+
   return (
     <html lang="tr">
       <head>
         <HeadContent />
-
-        {/* Google AdSense */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2311108731423361"
-          crossOrigin="anonymous"
-        />
 
         {/* Google için StajyerBul marka bilgisi */}
         <script

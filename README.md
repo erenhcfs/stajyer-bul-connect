@@ -21,6 +21,7 @@ Vercel'de Nitro hedefi otomatik seçilir; Lovable yapılandırması korunmuştur
 
 ## Onarılan başlıca sorunlar
 
+- AdSense betiği ilk React yüklemesi sonrasına alındı; reklamların SSR HTML yapısını erken değiştirerek hydration hatası oluşturması giderildi.
 - Blog yönetimindeki derlemeyi bozan JSX, geçersiz rota ağacı ve iç içe blog detay rotası.
 - Eksik Supabase ayarlarında başlangıç çökmesi, doğrulama e-postası akışı, sessiz yükleme/kaydetme hataları.
 - Yönetimde tarayıcıya gömülü şifreler ve sahte yerel oturumlar: imzalı HttpOnly çerez ve sunucu API'sine taşındı. Yönetim yazmaları service-role istemcisiyle yapılır.
