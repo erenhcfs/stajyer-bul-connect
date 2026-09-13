@@ -9,13 +9,26 @@ export function Footer() {
           <Logo />
           <p className="text-sm text-muted-foreground">Aradığın stajyeri bul.</p>
         </div>
-        <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground" aria-label="Alt menü">
-          <Link to="/stajyer-bul" className="hover:text-foreground">Stajyer Bul</Link>
-          <Link to="/ilanlar" className="hover:text-foreground">İlanlar</Link>
-          <Link to="/nasil-calisir" className="hover:text-foreground">Nasıl Çalışır?</Link>
-          <Link to="/isverenler" className="hover:text-foreground">İşverenler</Link>
+        <nav
+          className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground"
+          aria-label="Alt menü"
+        >
+          <Link to="/stajyer-bul" className="hover:text-foreground">
+            Stajyer Bul
+          </Link>
+          <Link to="/ilanlar" className="hover:text-foreground">
+            İlanlar
+          </Link>
+          <Link to="/nasil-calisir" className="hover:text-foreground">
+            Nasıl Çalışır?
+          </Link>
+          <Link to="/isverenler" className="hover:text-foreground">
+            İşverenler
+          </Link>
         </nav>
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} StajyerBul · stajyerbul.com.tr</p>
+        <p className="text-xs text-muted-foreground">
+          © {new Date().getFullYear()} StajyerBul · stajyerbul.com.tr
+        </p>
       </div>
     </footer>
   );

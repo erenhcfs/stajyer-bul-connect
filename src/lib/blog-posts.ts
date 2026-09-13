@@ -48,10 +48,10 @@ export const POSTS: Post[] = [
     excerpt:
       "İK uzmanlarının sıkça sorduğu klasik soruları ve bu sorulara özgüvenle nasıl yanıt verebileceğini derledik.",
     content: [
-      "\"Kendinden bahseder misin?\" sorusu genellikle mülakatın açılışıdır; kısa, öz ve pozisyonla ilgili bir özet hazırlamak işini kolaylaştırır.",
-      "\"Neden bizi seçtin?\" sorusuna hazırlıksız yakalanmamak için şirket hakkında önceden araştırma yapmak şart.",
+      '"Kendinden bahseder misin?" sorusu genellikle mülakatın açılışıdır; kısa, öz ve pozisyonla ilgili bir özet hazırlamak işini kolaylaştırır.',
+      '"Neden bizi seçtin?" sorusuna hazırlıksız yakalanmamak için şirket hakkında önceden araştırma yapmak şart.',
       "Güçlü ve zayıf yönlerini anlatırken somut örneklerle desteklemek, cevabını daha inandırıcı kılar.",
-      "\"Beş yıl sonra kendini nerede görüyorsun?\" gibi sorular, kariyer hedeflerinin şirketin sunduklarıyla uyumunu ölçmek içindir.",
+      '"Beş yıl sonra kendini nerede görüyorsun?" gibi sorular, kariyer hedeflerinin şirketin sunduklarıyla uyumunu ölçmek içindir.',
       "Maaş beklentisi sorulduğunda araştırılmış bir aralık vermek, ne çok düşük ne de çok yüksek bir rakamla karşılaşmanı önler.",
     ],
     category: "Mülakat İpuçları",

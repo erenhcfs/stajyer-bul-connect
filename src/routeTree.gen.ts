@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogRouteImport } from './routes/blog'
+import { Route as BlogYonetRouteImport } from './routes/blog-yonet'
 import { Route as GirisRouteImport } from './routes/giris'
 import { Route as HakkimizdaRouteImport } from './routes/hakkimizda'
 import { Route as IlanlarRouteImport } from './routes/ilanlar'
@@ -20,12 +22,21 @@ import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as StajyerBulRouteImport } from './routes/stajyer-bul'
 import { Route as YonetimRouteImport } from './routes/yonetim'
-import { Route as BlogSlugRouteImport } from './routes/blog/$slug'
-import { Route as BlogBlogRouteImport } from './routes/blog.tsx'
+import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogYonetRoute = BlogYonetRouteImport.update({
+  id: '/blog-yonet',
+  path: '/blog-yonet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GirisRoute = GirisRouteImport.update({
@@ -79,18 +90,15 @@ const YonetimRoute = YonetimRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/blog/$slug',
+  id: '/blog_/$slug',
   path: '/blog/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BlogBlogRoute = BlogBlogRouteImport.update({
-  id: '/blog/blog',
-  path: '/blog/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/blog': typeof BlogRoute
+  '/blog-yonet': typeof BlogYonetRoute
   '/giris': typeof GirisRoute
   '/hakkimizda': typeof HakkimizdaRoute
   '/ilanlar': typeof IlanlarRoute
@@ -102,10 +110,11 @@ export interface FileRoutesByFullPath {
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
   '/blog/$slug': typeof BlogSlugRoute
-  '/blog/blog': typeof BlogBlogRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/blog': typeof BlogRoute
+  '/blog-yonet': typeof BlogYonetRoute
   '/giris': typeof GirisRoute
   '/hakkimizda': typeof HakkimizdaRoute
   '/ilanlar': typeof IlanlarRoute
@@ -117,11 +126,12 @@ export interface FileRoutesByTo {
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
   '/blog/$slug': typeof BlogSlugRoute
-  '/blog/blog': typeof BlogBlogRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/blog': typeof BlogRoute
+  '/blog-yonet': typeof BlogYonetRoute
   '/giris': typeof GirisRoute
   '/hakkimizda': typeof HakkimizdaRoute
   '/ilanlar': typeof IlanlarRoute
@@ -132,13 +142,14 @@ export interface FileRoutesById {
   '/profil': typeof ProfilRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
-  '/blog/$slug': typeof BlogSlugRoute
-  '/blog/blog': typeof BlogBlogRoute
+  '/blog_/$slug': typeof BlogSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/blog'
+    | '/blog-yonet'
     | '/giris'
     | '/hakkimizda'
     | '/ilanlar'
@@ -150,10 +161,11 @@ export interface FileRouteTypes {
     | '/stajyer-bul'
     | '/yonetim'
     | '/blog/$slug'
-    | '/blog/blog'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/blog'
+    | '/blog-yonet'
     | '/giris'
     | '/hakkimizda'
     | '/ilanlar'
@@ -165,10 +177,11 @@ export interface FileRouteTypes {
     | '/stajyer-bul'
     | '/yonetim'
     | '/blog/$slug'
-    | '/blog/blog'
   id:
     | '__root__'
     | '/'
+    | '/blog'
+    | '/blog-yonet'
     | '/giris'
     | '/hakkimizda'
     | '/ilanlar'
@@ -179,12 +192,13 @@ export interface FileRouteTypes {
     | '/profil'
     | '/stajyer-bul'
     | '/yonetim'
-    | '/blog/$slug'
-    | '/blog/blog'
+    | '/blog_/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BlogRoute: typeof BlogRoute
+  BlogYonetRoute: typeof BlogYonetRoute
   GirisRoute: typeof GirisRoute
   HakkimizdaRoute: typeof HakkimizdaRoute
   IlanlarRoute: typeof IlanlarRoute
@@ -196,7 +210,6 @@ export interface RootRouteChildren {
   StajyerBulRoute: typeof StajyerBulRoute
   YonetimRoute: typeof YonetimRoute
   BlogSlugRoute: typeof BlogSlugRoute
-  BlogBlogRoute: typeof BlogBlogRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -206,6 +219,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog-yonet': {
+      id: '/blog-yonet'
+      path: '/blog-yonet'
+      fullPath: '/blog-yonet'
+      preLoaderRoute: typeof BlogYonetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/giris': {
@@ -278,18 +305,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof YonetimRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/$slug': {
-      id: '/blog/$slug'
+    '/blog_/$slug': {
+      id: '/blog_/$slug'
       path: '/blog/$slug'
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blog/blog': {
-      id: '/blog/blog'
-      path: '/blog/blog'
-      fullPath: '/blog/blog'
-      preLoaderRoute: typeof BlogBlogRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -297,6 +317,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BlogRoute: BlogRoute,
+  BlogYonetRoute: BlogYonetRoute,
   GirisRoute: GirisRoute,
   HakkimizdaRoute: HakkimizdaRoute,
   IlanlarRoute: IlanlarRoute,
@@ -308,7 +330,6 @@ const rootRouteChildren: RootRouteChildren = {
   StajyerBulRoute: StajyerBulRoute,
   YonetimRoute: YonetimRoute,
   BlogSlugRoute: BlogSlugRoute,
-  BlogBlogRoute: BlogBlogRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -26,33 +26,38 @@ function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError(null);
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess(true);
-      setTimeout(() => navigate({ to: "/giris" }), 3000);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/profil` },
+      });
+      if (error) throw error;
+      if (data.session) await navigate({ to: "/profil" });
+      else setSuccess(true);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "İşlem tamamlanamadı.");
+    } finally {
+      setLoading(false);
     }
   };
-
   const handleSocialLogin = async (provider: "google" | "linkedin_oidc") => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
-    if (error) {
-      setError(error.message);
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: `${window.location.origin}/profil` },
+      });
+      if (error) throw error;
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Giriş başlatılamadı.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,15 +72,14 @@ function RegisterPage() {
           </div>
 
           {error && (
-            <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
+            <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
           )}
 
           {/* Sosyal Medya Butonları */}
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
+              disabled={loading}
               onClick={() => handleSocialLogin("google")}
               className="flex items-center justify-center gap-2 rounded-lg border border-input bg-background py-2.5 text-sm font-medium transition-colors hover:bg-muted"
             >
@@ -101,6 +105,7 @@ function RegisterPage() {
             </button>
             <button
               type="button"
+              disabled={loading}
               onClick={() => handleSocialLogin("linkedin_oidc")}
               className="flex items-center justify-center gap-2 rounded-lg border border-input bg-background py-2.5 text-sm font-medium transition-colors hover:bg-muted"
             >
@@ -119,7 +124,8 @@ function RegisterPage() {
 
           {success ? (
             <div className="rounded-lg bg-green-500/10 p-4 text-center text-sm text-green-600">
-              Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...
+              Kayıt oluşturuldu. E-posta adresinize gönderilen doğrulama bağlantısını açın; ardından
+              giriş yapabilirsiniz.
             </div>
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">
@@ -138,6 +144,8 @@ function RegisterPage() {
                 <label className="text-sm font-medium">Şifre</label>
                 <input
                   type="password"
+                  minLength={6}
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

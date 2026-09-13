@@ -27,27 +27,18 @@ import {
   type BlogPost,
 } from "@/lib/blog-helpers";
 
-const SITE_URL = "https://stajyerbul.com";
+const SITE_URL = "https://stajyerbul.com.tr";
 
 export const Route = createFileRoute("/blog")({
   component: BlogPage,
   loader: async () => {
-    try {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("published", true)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Blog yüklenirken Supabase hatası:", error);
-        return [];
-      }
-      return (data ?? []) as BlogPost[];
-    } catch (err) {
-      console.error("Blog loader hatası:", err);
-      return [];
-    }
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("published", true)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error("Blog yüklenemedi. Lütfen yeniden deneyin.");
+    return (data ?? []) as BlogPost[];
   },
   head: () => ({
     meta: [
@@ -61,8 +52,7 @@ export const Route = createFileRoute("/blog")({
       { property: "og:title", content: "Blog | Stajyer Bul" },
       {
         property: "og:description",
-        content:
-          "Staj başvuru süreçleri, mülakat ipuçları ve kariyer planlama rehberleri.",
+        content: "Staj başvuru süreçleri, mülakat ipuçları ve kariyer planlama rehberleri.",
       },
       { property: "og:url", content: `${SITE_URL}/blog` },
     ],
@@ -73,14 +63,13 @@ export const Route = createFileRoute("/blog")({
 const CATEGORIES = ["Tümü", ...(BLOG_CATEGORIES || [])];
 
 function BlogPage() {
-  const posts = Route.useLoaderData() ?? [];
+  const posts = Route.useLoaderData();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("Tümü");
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
-      const matchesCategory =
-        activeCategory === "Tümü" || post.category === activeCategory;
+      const matchesCategory = activeCategory === "Tümü" || post.category === activeCategory;
       const query = search.trim().toLowerCase();
       const matchesSearch =
         query.length === 0 ||
@@ -91,9 +80,11 @@ function BlogPage() {
   }, [posts, search, activeCategory]);
 
   const featuredPost = posts[0];
-  const gridPosts = filteredPosts.filter((p) => p.id !== featuredPost?.id);
-  const showFeatured =
-    activeCategory === "Tümü" && search.trim().length === 0 && !!featuredPost;
+
+  const showFeatured = activeCategory === "Tümü" && search.trim().length === 0 && !!featuredPost;
+  const gridPosts = showFeatured
+    ? filteredPosts.filter((p) => p.id !== featuredPost?.id)
+    : filteredPosts;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -114,8 +105,8 @@ function BlogPage() {
               </h1>
 
               <p className="mt-4 text-muted-foreground text-base sm:text-lg">
-                Staj süreçleri, mülakat ipuçları ve mesleki gelişim üzerine
-                derlediğimiz yazılarla bir adım öne geç.
+                Staj süreçleri, mülakat ipuçları ve mesleki gelişim üzerine derlediğimiz yazılarla
+                bir adım öne geç.
               </p>
 
               <div className="mt-8 relative mx-auto max-w-md">
@@ -177,9 +168,7 @@ function BlogPage() {
                     <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                       {featuredPost.title}
                     </h2>
-                    <p className="mt-3 text-muted-foreground">
-                      {featuredPost.excerpt}
-                    </p>
+                    <p className="mt-3 text-muted-foreground">{featuredPost.excerpt}</p>
                     <div className="mt-6 flex items-center gap-3">
                       <Avatar className="size-8">
                         <AvatarFallback className="text-xs">
@@ -187,9 +176,7 @@ function BlogPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="text-sm">
-                        <p className="font-medium text-foreground">
-                          {featuredPost.author_name}
-                        </p>
+                        <p className="font-medium text-foreground">{featuredPost.author_name}</p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span className="inline-flex items-center gap-1">
                             <Calendar className="size-3" />
@@ -216,11 +203,7 @@ function BlogPage() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {gridPosts.map((post, index) => (
                 <Fragment key={post.id}>
-                  <Link
-                    to="/blog/$slug"
-                    params={{ slug: post.slug }}
-                    className="group"
-                  >
+                  <Link to="/blog/$slug" params={{ slug: post.slug }} className="group">
                     <Card className="h-full overflow-hidden border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-md">
                       <div
                         className={`flex h-36 items-center justify-center bg-gradient-to-br ${categoryGradient(
@@ -238,9 +221,7 @@ function BlogPage() {
                         </h3>
                       </CardHeader>
                       <CardContent className="pb-3">
-                        <p className="line-clamp-2 text-sm text-muted-foreground">
-                          {post.excerpt}
-                        </p>
+                        <p className="line-clamp-2 text-sm text-muted-foreground">{post.excerpt}</p>
                       </CardContent>
                       <CardFooter className="flex items-center justify-between border-t pt-3 text-xs text-muted-foreground">
                         <div className="flex items-center gap-2">
@@ -273,9 +254,7 @@ function BlogPage() {
               <div className="grid size-14 place-items-center rounded-full bg-muted">
                 <Search className="size-6 text-muted-foreground" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
-                Sonuç bulunamadı
-              </h3>
+              <h3 className="mt-4 text-lg font-semibold text-foreground">Sonuç bulunamadı</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 Aramanla veya seçtiğin kategoriyle eşleşen bir yazı bulamadık.
               </p>
@@ -301,26 +280,16 @@ function BlogPage() {
                 <Mail className="size-5 text-primary" />
               </div>
               <h3 className="text-xl font-bold tracking-tight text-foreground">
-                Yeni yazılardan haberdar ol
+                Kariyerine ilk adımı at
               </h3>
               <p className="text-sm text-muted-foreground">
-                Kariyer ve staj rehberi yazılarımızı e-posta ile almak için
-                bültenimize katıl.
+                Profilini oluştur, staj ilanlarını keşfet ve işverenlerle iletişim kur.
               </p>
-              <form
-                onSubmit={(e) => e.preventDefault()}
-                className="mt-2 flex w-full max-w-sm flex-col gap-2 sm:flex-row"
-              >
-                <Input
-                  type="email"
-                  required
-                  placeholder="E-posta adresin"
-                  className="h-11 rounded-xl"
-                />
-                <Button type="submit" className="h-11 rounded-xl gap-1.5">
-                  Abone Ol <ArrowRight className="size-4" />
-                </Button>
-              </form>
+              <Button asChild className="h-11 rounded-xl">
+                <Link to="/kayit">
+                  Hesap Oluştur <ArrowRight className="size-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </section>

@@ -17,8 +17,20 @@ export const Route = createFileRoute("/profil")({
 
 // Türkiye'nin Büyükşehirleri / Önemli İlleri Listesi
 const TURKEY_CITIES = [
-  "İstanbul (Anadolu)", "İstanbul (Avrupa)", "Ankara", "İzmir", "Bursa", 
-  "Kocaeli", "Konya", "Antalya", "Adana", "Gaziantep", "Tekirdağ", "Sakarya", "Manisa", "Diğer"
+  "İstanbul (Anadolu)",
+  "İstanbul (Avrupa)",
+  "Ankara",
+  "İzmir",
+  "Bursa",
+  "Kocaeli",
+  "Konya",
+  "Antalya",
+  "Adana",
+  "Gaziantep",
+  "Tekirdağ",
+  "Sakarya",
+  "Manisa",
+  "Diğer",
 ];
 
 // MESEM, Meslek Liseleri ve Üniversite / MYO Popüler Bölümleri Listesi
@@ -36,7 +48,7 @@ const POPULAR_DEPARTMENTS = [
   "Tesisat Teknolojisi ve İklimlendirme",
   "Endüstriyel Otomasyon / Mekatronik",
   "Yönetim Bilişim Sistemleri",
-  "Diğer"
+  "Diğer",
 ];
 
 // Yaş Listesi
@@ -44,6 +56,7 @@ const AGES = Array.from({ length: 13 }, (_, i) => 15 + i); // 15'ten 27'ye kadar
 
 function ProfilPage() {
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [userRole, setUserRole] = useState<string>("stajyer");
@@ -72,42 +85,49 @@ function ProfilPage() {
 
   const fetchProfile = async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    setLoadError("");
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) {
-      window.location.href = "/giris";
-      return;
+      if (!user) {
+        window.location.href = "/giris";
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        setUserRole(data.role === "isveren" ? "isveren" : "stajyer");
+        setFullName(data.full_name || "");
+        setPhone(data.phone || "");
+        setCity(data.city || data.location || "İstanbul (Anadolu)");
+        setSchool(data.school || "");
+        setGrade(data.grade || "11. Sınıf");
+        setDepartment(data.department || "CNC / Talaşlı Üretim");
+        setAge(data.age || 18);
+        setSkills(data.skills || "");
+        setAvatarUrl(data.avatar_url || "");
+        setIsLookingForInternship(!!data.is_looking_for_internship);
+
+        setCompanyName(data.company_name || "");
+        setSector(data.sector || "");
+        setTaxNumber(data.tax_number || "");
+      }
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Profil yüklenemedi.");
+    } finally {
+      setLoading(false);
     }
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Profil çekilemedi:", error.message);
-    }
-
-    if (data) {
-      setUserRole(data.role === "isveren" ? "isveren" : "stajyer");
-      setFullName(data.full_name || "");
-      setPhone(data.phone || "");
-      setCity(data.city || data.location || "İstanbul (Anadolu)");
-      setSchool(data.school || "");
-      setGrade(data.grade || "11. Sınıf");
-      setDepartment(data.department || "CNC / Talaşlı Üretim");
-      setAge(data.age || 18);
-      setSkills(data.skills || "");
-      setAvatarUrl(data.avatar_url || "");
-      setIsLookingForInternship(!!data.is_looking_for_internship);
-
-      setCompanyName(data.company_name || "");
-      setSector(data.sector || "");
-      setTaxNumber(data.tax_number || "");
-    }
-
-    setLoading(false);
   };
 
   // Profil Resmi Yükleme Fonksiyonu
@@ -115,24 +135,32 @@ function ProfilPage() {
     try {
       setUploadingImage(true);
       if (!e.target.files || e.target.files.length === 0) return;
-      
+
       const file = e.target.files[0];
       if (!file) return;
 
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Resim yüklemek için giriş yapın.");
+      const extension = (
+        { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" } as Record<string, string>
+      )[file.type];
+      if (!extension || file.size > 5 * 1024 * 1024)
+        throw new Error("En fazla 5 MB boyutunda JPG, PNG veya WebP seçin.");
+      const filePath = `${user.id}/${crypto.randomUUID()}.${extension}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file);
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
       setAvatarUrl(data.publicUrl);
-    } catch (error: any) {
-      alert("Resim yüklenirken hata oluştu: " + error.message);
+    } catch (error: unknown) {
+      alert(
+        "Resim yüklenirken hata oluştu: " +
+          (error instanceof Error ? error.message : "Bilinmeyen hata"),
+      );
     } finally {
       setUploadingImage(false);
     }
@@ -140,47 +168,60 @@ function ProfilPage() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     setSaving(true);
-    setMessage("");
+    try {
+      setMessage("");
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Oturumunuz sona erdi. Yeniden giriş yapın.");
+      }
+
+      const profileData = {
+        id: user.id,
+        email: user.email,
+        role: userRole,
+        full_name: fullName,
+        phone: phone,
+        city: city,
+        location: city,
+        school: school,
+        grade: grade,
+        department: department,
+        age: Number(age),
+        skills: skills,
+        avatar_url: avatarUrl,
+        is_looking_for_internship: isLookingForInternship,
+        company_name: companyName,
+        sector: sector,
+        tax_number: taxNumber,
+      };
+
+      const { error } = await supabase.from("profiles").upsert(profileData, { onConflict: "id" });
+
+      if (error) {
+        setMessage("Güncellenirken hata oluştu: " + error.message);
+      } else {
+        setMessage("Profiliniz başarıyla kaydedildi!");
+        fetchProfile();
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Profil kaydedilemedi.");
+    } finally {
       setSaving(false);
-      return;
     }
-
-    const profileData = {
-      id: user.id,
-      email: user.email,
-      role: userRole,
-      full_name: fullName,
-      phone: phone,
-      city: city,
-      location: city,
-      school: school,
-      grade: grade,
-      department: department,
-      age: Number(age),
-      skills: skills,
-      avatar_url: avatarUrl,
-      is_looking_for_internship: isLookingForInternship,
-      company_name: companyName,
-      sector: sector,
-      tax_number: taxNumber,
-    };
-
-    const { error } = await supabase
-      .from("profiles")
-      .upsert(profileData, { onConflict: "id" });
-
-    if (error) {
-      setMessage("Güncellenirken hata oluştu: " + error.message);
-    } else {
-      setMessage("Profiliniz başarıyla kaydedildi!");
-      fetchProfile();
-    }
-    setSaving(false);
   };
+
+  if (loadError)
+    return (
+      <div className="container-x py-12">
+        <p role="alert">{loadError}</p>
+        <button onClick={fetchProfile}>Yeniden dene</button>
+      </div>
+    );
 
   if (loading) {
     return (
@@ -198,7 +239,6 @@ function ProfilPage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
       <main className="flex-1 container-x py-10 max-w-3xl mx-auto space-y-8">
-        
         <div className="border-b border-border pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold flex items-center gap-2">
@@ -229,14 +269,18 @@ function ProfilPage() {
         </div>
 
         {message && (
-          <div className={`p-4 rounded-xl text-sm font-medium flex items-center gap-2 ${message.includes("başarıyla") ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-destructive/10 text-destructive border border-destructive/20"}`}>
+          <div
+            className={`p-4 rounded-xl text-sm font-medium flex items-center gap-2 ${message.includes("başarıyla") ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-destructive/10 text-destructive border border-destructive/20"}`}
+          >
             <CheckCircle2 className="size-5 shrink-0" />
             {message}
           </div>
         )}
 
-        <form onSubmit={handleUpdate} className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm">
-          
+        <form
+          onSubmit={handleUpdate}
+          className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm"
+        >
           {userRole === "stajyer" ? (
             <>
               {/* Profil Resmi Yükleme Alanı */}
@@ -249,19 +293,30 @@ function ProfilPage() {
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-muted-foreground">Profil Fotoğrafı</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">
+                    Profil Fotoğrafı
+                  </label>
                   <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-xs font-semibold cursor-pointer hover:bg-secondary/80 transition">
                     <Camera className="size-4" />
                     {uploadingImage ? "Yükleniyor..." : "Fotoğraf Seç / Değiştir"}
-                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
                   </label>
-                  <p className="text-[11px] text-muted-foreground">İşverenlerin sizi daha rahat tanıması için net bir fotoğraf yükleyin.</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    İşverenlerin sizi daha rahat tanıması için net bir fotoğraf yükleyin.
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Ad Soyad</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Ad Soyad
+                  </label>
                   <input
                     type="text"
                     value={fullName}
@@ -273,7 +328,9 @@ function ProfilPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Telefon Numarası</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Telefon Numarası
+                  </label>
                   <input
                     type="text"
                     value={phone}
@@ -284,7 +341,9 @@ function ProfilPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Okul / Üniversite Adı</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Okul / Üniversite Adı
+                  </label>
                   <input
                     type="text"
                     value={school}
@@ -295,7 +354,9 @@ function ProfilPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Sınıf / Seviye</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Sınıf / Seviye
+                  </label>
                   <select
                     value={grade}
                     onChange={(e) => setGrade(e.target.value)}
@@ -313,47 +374,61 @@ function ProfilPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Bölüm / Alan (Listeden Seçiniz)</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Bölüm / Alan (Listeden Seçiniz)
+                  </label>
                   <select
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
                     className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
                   >
                     {POPULAR_DEPARTMENTS.map((dept) => (
-                      <option key={dept} value={dept}>{dept}</option>
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Yaş</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Yaş
+                  </label>
                   <select
                     value={age}
                     onChange={(e) => setAge(Number(e.target.value))}
                     className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
                   >
                     {AGES.map((a) => (
-                      <option key={a} value={a}>{a} Yaş</option>
+                      <option key={a} value={a}>
+                        {a} Yaş
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Oturduğu Şehir / Konum</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Oturduğu Şehir / Konum
+                  </label>
                   <select
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
                   >
                     {TURKEY_CITIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Yetenekler / Bildiğiniz Programlar</label>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                  Yetenekler / Bildiğiniz Programlar
+                </label>
                 <textarea
                   rows={3}
                   value={skills}
@@ -365,11 +440,15 @@ function ProfilPage() {
 
               <div className="rounded-2xl border-2 border-primary/20 bg-primary/5 p-5 flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                  <label htmlFor="internship-toggle" className="font-bold text-base flex items-center gap-2 cursor-pointer">
+                  <label
+                    htmlFor="internship-toggle"
+                    className="font-bold text-base flex items-center gap-2 cursor-pointer"
+                  >
                     <Briefcase className="size-5 text-primary" /> Aktif Staj Arıyorum
                   </label>
                   <p className="text-xs text-muted-foreground">
-                    Bu seçeneği işaretlediğinizde işletmeler "Stajyer Bul" sayfasında sizi görüntüleyebilir ve teklif gönderebilir.
+                    Bu seçeneği işaretlediğinizde işletmeler "Stajyer Bul" sayfasında sizi
+                    görüntüleyebilir ve teklif gönderebilir.
                   </p>
                 </div>
                 <input
@@ -384,7 +463,9 @@ function ProfilPage() {
           ) : (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">İşletme / Şirket Adı</label>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                  İşletme / Şirket Adı
+                </label>
                 <input
                   type="text"
                   value={companyName}
@@ -395,7 +476,9 @@ function ProfilPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Sektör</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Sektör
+                  </label>
                   <input
                     type="text"
                     value={sector}
@@ -404,7 +487,9 @@ function ProfilPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Vergi Numarası</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Vergi Numarası
+                  </label>
                   <input
                     type="text"
                     value={taxNumber}
@@ -415,7 +500,9 @@ function ProfilPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">İletişim Telefonu</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    İletişim Telefonu
+                  </label>
                   <input
                     type="text"
                     value={phone}
@@ -424,14 +511,18 @@ function ProfilPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Şehir</label>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Şehir
+                  </label>
                   <select
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm"
                   >
                     {TURKEY_CITIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -449,7 +540,6 @@ function ProfilPage() {
               {saving ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
             </button>
           </div>
-
         </form>
       </main>
       <Footer />

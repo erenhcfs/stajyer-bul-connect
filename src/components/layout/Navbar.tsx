@@ -20,9 +20,12 @@ export function Navbar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+      })
+      .catch(() => setUser(null));
 
     const {
       data: { subscription },
@@ -34,9 +37,14 @@ export function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    navigate({ to: "/giris" });
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+      await navigate({ to: "/giris" });
+    } catch {
+      alert("Çıkış yapılamadı. Lütfen yeniden deneyin.");
+    }
   };
 
   return (
@@ -48,7 +56,7 @@ export function Navbar() {
         </div>
 
         {/* Orta Kısım: Navigasyon */}
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Ana menü">
+        <nav className="hidden items-center gap-1 xl:flex" aria-label="Ana menü">
           <Link
             to="/stajyer-bul"
             className="rounded-lg px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -97,7 +105,7 @@ export function Navbar() {
         </nav>
 
         {/* Sağ Kısım: Kullanıcı / Giriş Butonları */}
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 xl:flex">
           {user ? (
             <div className="flex items-center gap-2">
               <Link
@@ -134,7 +142,7 @@ export function Navbar() {
 
         {/* Mobil Menü Butonu */}
         <button
-          className="grid size-10 place-items-center rounded-lg text-foreground hover:bg-muted md:hidden"
+          className="grid size-10 place-items-center rounded-lg text-foreground hover:bg-muted xl:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
           aria-expanded={open}
@@ -145,7 +153,7 @@ export function Navbar() {
 
       {/* Mobil Menü İçeriği */}
       {open && (
-        <div className="border-t border-border bg-background md:hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="border-t border-border bg-background xl:hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <nav className="container-x flex flex-col gap-1 py-3" aria-label="Mobil menü">
             <Link
               to="/stajyer-bul"

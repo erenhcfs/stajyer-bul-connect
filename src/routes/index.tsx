@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
   BadgeCheck,
@@ -50,8 +50,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:description",
-        content:
-          "Staj arayan öğrenciler ile stajyer arayan işletmeleri buluşturan platform.",
+        content: "Staj arayan öğrenciler ile stajyer arayan işletmeleri buluşturan platform.",
       },
       {
         property: "og:type",
@@ -71,8 +70,7 @@ export const Route = createFileRoute("/")({
       },
       {
         name: "twitter:description",
-        content:
-          "Staj arayan öğrenciler ile stajyer arayan işletmeleri buluşturan platform.",
+        content: "Staj arayan öğrenciler ile stajyer arayan işletmeleri buluşturan platform.",
       },
       {
         name: "twitter:image",
@@ -110,7 +108,7 @@ const steps = [
   {
     n: "03",
     title: "Uygun adaylarla iletişime geç",
-    desc: "Teklif gönder, başvuruları yönet ve platform içinden mesajlaş.",
+    desc: "Adayların paylaştığı iletişim bilgileriyle e-posta üzerinden görüş.",
   },
   {
     n: "04",
@@ -147,6 +145,7 @@ const demoCandidates = [
 ];
 
 function Index() {
+  const navigate = useNavigate();
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -154,10 +153,7 @@ function Index() {
       <main className="flex-1">
         {/* HERO */}
         <section className="relative overflow-hidden">
-          <div
-            className="hero-grid pointer-events-none absolute inset-0"
-            aria-hidden
-          />
+          <div className="hero-grid pointer-events-none absolute inset-0" aria-hidden />
           <div
             className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-accent blur-3xl"
             aria-hidden
@@ -175,22 +171,15 @@ function Index() {
               </h1>
 
               <p className="animate-rise mx-auto mt-5 max-w-xl text-lg text-muted-foreground [animation-delay:120ms]">
-                İhtiyacın olan stajyeri keşfet, profilleri incele veya kendi
-                staj ilanını oluştur.
+                İhtiyacın olan stajyeri keşfet, profilleri incele veya kendi staj ilanını oluştur.
               </p>
 
               <div className="animate-rise mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row [animation-delay:180ms]">
-                <Link
-                  to="/stajyer-bul"
-                  className="btn btn-primary btn-lg w-full sm:w-auto"
-                >
+                <Link to="/stajyer-bul" className="btn btn-primary btn-lg w-full sm:w-auto">
                   Stajyer Bul <ArrowRight className="size-4" />
                 </Link>
 
-                <Link
-                  to="/isletme-paneli"
-                  className="btn btn-outline btn-lg w-full sm:w-auto"
-                >
+                <Link to="/isletme-paneli" className="btn btn-outline btn-lg w-full sm:w-auto">
                   Staj İlanı Oluştur
                 </Link>
               </div>
@@ -199,13 +188,24 @@ function Index() {
             {/* SEARCH */}
             <form
               className="animate-rise card-soft mx-auto mt-12 flex max-w-3xl flex-col gap-2 p-2 sm:flex-row sm:items-center [animation-delay:240ms]"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={(e) => {
+                e.preventDefault();
+                const values = new FormData(e.currentTarget);
+                void navigate({
+                  to: "/ilanlar",
+                  search: {
+                    q: String(values.get("q") || ""),
+                    city: String(values.get("city") || ""),
+                  },
+                });
+              }}
               role="search"
             >
               <label className="flex flex-1 items-center gap-3 rounded-xl px-4 py-3 transition-colors focus-within:bg-muted">
                 <Search className="size-5 shrink-0 text-muted-foreground" />
                 <input
                   className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  name="q"
                   placeholder="Pozisyon, beceri veya alan ara"
                   aria-label="Pozisyon, beceri veya alan ara"
                 />
@@ -218,11 +218,10 @@ function Index() {
                 <select
                   className="w-full bg-transparent text-sm outline-none"
                   defaultValue=""
+                  name="city"
                   aria-label="Şehir seç"
                 >
-                  <option value="" disabled>
-                    Şehir seç
-                  </option>
+                  <option value="">Şehir seç</option>
                   {[
                     "İstanbul",
                     "Ankara",
@@ -238,10 +237,7 @@ function Index() {
                 </select>
               </label>
 
-              <button
-                type="submit"
-                className="btn btn-primary h-12 rounded-xl sm:px-7"
-              >
+              <button type="submit" className="btn btn-primary h-12 rounded-xl sm:px-7">
                 Ara
               </button>
             </form>
@@ -256,6 +252,7 @@ function Index() {
                 <Link
                   key={label}
                   to="/ilanlar"
+                  search={{ q: label }}
                   className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3.5 py-2 text-sm font-medium text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent hover:text-primary"
                 >
                   <Icon className="size-4 text-primary" />
@@ -276,15 +273,12 @@ function Index() {
                 </h2>
 
                 <p className="mt-2 max-w-lg text-muted-foreground">
-                  Beceri, okul, şehir ve müsaitlik durumuna göre filtrele;
-                  sana uygun adaya doğrudan teklif gönder.
+                  Beceri, okul, şehir ve müsaitlik durumuna göre filtrele; sana uygun adaya doğrudan
+                  teklif gönder.
                 </p>
               </div>
 
-              <Link
-                to="/stajyer-bul"
-                className="btn btn-ghost group text-primary hover:bg-accent"
-              >
+              <Link to="/stajyer-bul" className="btn btn-ghost group text-primary hover:bg-accent">
                 Tüm adaylar{" "}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
@@ -292,10 +286,7 @@ function Index() {
 
             <div className="mt-10 grid gap-5 md:grid-cols-3">
               {demoCandidates.map((c) => (
-                <article
-                  key={c.name}
-                  className="card-soft card-hover relative p-5"
-                >
+                <article key={c.name} className="card-soft card-hover relative p-5">
                   <span className="absolute top-4 right-4 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Örnek
                   </span>
@@ -313,9 +304,7 @@ function Index() {
                     </div>
                   </div>
 
-                  <p className="mt-4 text-sm text-muted-foreground">
-                    {c.school}
-                  </p>
+                  <p className="mt-4 text-sm text-muted-foreground">{c.school}</p>
 
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {c.skills.map((s) => (
@@ -330,13 +319,10 @@ function Index() {
 
                   <div className="mt-5 flex items-center justify-between text-xs">
                     <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
-                      <span className="size-2 rounded-full bg-success" /> Staj
-                      arıyor
+                      <span className="size-2 rounded-full bg-success" /> Staj arıyor
                     </span>
 
-                    <span className="text-muted-foreground">
-                      Profil %{c.pct}
-                    </span>
+                    <span className="text-muted-foreground">Profil %{c.pct}</span>
                   </div>
 
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
@@ -347,17 +333,11 @@ function Index() {
                   </div>
 
                   <div className="mt-5 grid grid-cols-2 gap-2">
-                    <Link
-                      to="/stajyer-bul"
-                      className="btn btn-outline h-10 text-sm"
-                    >
+                    <Link to="/stajyer-bul" className="btn btn-outline h-10 text-sm">
                       Profili İncele
                     </Link>
 
-                    <Link
-                      to="/kayit"
-                      className="btn btn-primary h-10 text-sm shadow-none"
-                    >
+                    <Link to="/kayit" className="btn btn-primary h-10 text-sm shadow-none">
                       Teklif Gönder
                     </Link>
                   </div>
@@ -374,25 +354,17 @@ function Index() {
               StajyerBul nasıl çalışır?
             </h2>
 
-            <p className="mt-3 text-muted-foreground">
-              Dört adımda doğru stajyere ulaş.
-            </p>
+            <p className="mt-3 text-muted-foreground">Dört adımda doğru stajyere ulaş.</p>
           </div>
 
           <ol className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((s) => (
               <li key={s.n} className="card-soft card-hover p-6">
-                <span className="text-sm font-extrabold text-primary">
-                  {s.n}
-                </span>
+                <span className="text-sm font-extrabold text-primary">{s.n}</span>
 
-                <h3 className="mt-3 text-lg font-bold leading-snug">
-                  {s.title}
-                </h3>
+                <h3 className="mt-3 text-lg font-bold leading-snug">{s.title}</h3>
 
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {s.desc}
-                </p>
+                <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
               </li>
             ))}
           </ol>
@@ -407,20 +379,14 @@ function Index() {
                   <Briefcase className="size-5" />
                 </span>
 
-                <h3 className="mt-5 text-2xl font-extrabold tracking-tight">
-                  İşveren misin?
-                </h3>
+                <h3 className="mt-5 text-2xl font-extrabold tracking-tight">İşveren misin?</h3>
 
                 <p className="mt-2 text-muted-foreground">
-                  Firmanı doğrula, ilan yayınla ve adaylara doğrudan teklif
-                  gönder.
+                  Firmanı doğrula, ilan yayınla ve adaylarla e-posta üzerinden iletişim kur.
                 </p>
               </div>
 
-              <Link
-                to="/isletme-paneli"
-                className="btn btn-primary mt-6 w-fit"
-              >
+              <Link to="/isletme-paneli" className="btn btn-primary mt-6 w-fit">
                 İşveren olarak başla
               </Link>
             </div>
@@ -431,13 +397,10 @@ function Index() {
                   <Users className="size-5" />
                 </span>
 
-                <h3 className="mt-5 text-2xl font-extrabold tracking-tight">
-                  Staj mı arıyorsun?
-                </h3>
+                <h3 className="mt-5 text-2xl font-extrabold tracking-tight">Staj mı arıyorsun?</h3>
 
                 <p className="mt-2">
-                  Profilini oluştur, ilanlara başvur ve işverenlerden teklif
-                  al.
+                  Profilini oluştur, ilanlara başvur ve işverenlerden teklif al.
                 </p>
               </div>
 

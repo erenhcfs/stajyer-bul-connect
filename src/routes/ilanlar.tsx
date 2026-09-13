@@ -1,11 +1,28 @@
+import type { Profile, JobListing } from "@/lib/models";
+import type { User } from "@supabase/supabase-js";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Briefcase, MapPin, Building2, Plus, Search, Filter, Calendar, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import {
+  Briefcase,
+  MapPin,
+  Building2,
+  Plus,
+  Search,
+  Filter,
+  Calendar,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+} from "lucide-react";
 
 export const Route = createFileRoute("/ilanlar")({
+  validateSearch: (search: Record<string, unknown>): { q?: string; city?: string } => ({
+    ...(typeof search["q"] === "string" ? { q: search["q"] } : {}),
+    ...(typeof search["city"] === "string" ? { city: search["city"] } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Staj İlanları — StajyerBul" },
@@ -20,16 +37,25 @@ export const Route = createFileRoute("/ilanlar")({
 });
 
 function IlanlarPage() {
-  const [listings, setListings] = useState<any[]>([]);
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const [loadError, setLoadError] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [applicationMessage, setApplicationMessage] = useState("");
+  const [listings, setListings] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchQuery = search.q || "";
+  const setSearchQuery = (q: string) => {
+    void navigate({ search: (previous) => ({ ...previous, q }), replace: true });
+  };
   const [selectedWorkType, setSelectedWorkType] = useState("tumu");
-  
+
   // Kullanıcı ve Yetki Durumu
-  const [user, setUser] = useState<any>(null);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedListing, setSelectedListing] = useState<any>(null);
+  const [selectedListing, setSelectedListing] = useState<JobListing | null>(null);
 
   // Yeni İlan Form State'leri
   const [title, setTitle] = useState("");
@@ -47,29 +73,43 @@ function IlanlarPage() {
   }, []);
 
   const fetchUserAndProfile = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      setUser(session.user);
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-      if (data) setUserProfile(data);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        setUser(session.user);
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+        if (data) setUserProfile(data);
+      }
+    } catch {
+      setUser(null);
+      setUserProfile(null);
     }
   };
 
   const fetchListings = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("job_listings")
-      .select("*, profiles(company_name)")
-      .order("created_at", { ascending: false });
+    setLoadError("");
+    try {
+      const { data, error } = await supabase
+        .from("job_listings")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    if (data && !error) {
-      setListings(data);
+      if (error) throw error;
+      if (data) {
+        setListings(data);
+      }
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "İlanlar yüklenemedi.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleCreateListing = async (e: React.FormEvent) => {
@@ -77,60 +117,123 @@ function IlanlarPage() {
     setFormError("");
     setFormSuccess("");
 
-    if (!userProfile || userProfile.role !== "isveren" || userProfile.approval_status !== "onaylandi") {
+    if (
+      !user ||
+      !userProfile ||
+      userProfile.role !== "isveren" ||
+      userProfile.approval_status !== "onaylandi"
+    ) {
       setFormError("İlan oluşturmak için onaylı bir işveren hesabına sahip olmalısınız.");
       return;
     }
 
-    const { error } = await supabase.from("job_listings").insert({
-      employer_id: user.id,
-      title,
-      company_name: userProfile.company_name || "Şirket",
-      location,
-      work_type: workType,
-      department,
-      description,
-      requirements,
-    });
+    if (creating) return;
+    setCreating(true);
+    try {
+      const { count, error: countError } = await supabase
+        .from("job_listings")
+        .select("id", { count: "exact", head: true })
+        .eq("employer_id", user.id);
+      if (countError) throw countError;
+      if ((count ?? 0) >= 5) throw new Error("En fazla 5 ilan yayınlayabilirsiniz.");
+      const { error } = await supabase.from("job_listings").insert({
+        employer_id: user.id,
+        title,
+        company_name: userProfile.company_name || "Şirket",
+        location,
+        work_type: workType,
+        department,
+        description,
+        requirements,
+      });
 
-    if (error) {
-      setFormError("İlan eklenirken hata oluştu: " + error.message);
-    } else {
-      setFormSuccess("İlanınız başarıyla yayınlandı!");
-      setTitle("");
-      setLocation("");
-      setDepartment("");
-      setDescription("");
-      setRequirements("");
-      fetchListings();
-      setTimeout(() => {
-        setIsModalOpen(false);
-        setFormSuccess("");
-      }, 1500);
+      if (error) {
+        setFormError("İlan eklenirken hata oluştu: " + error.message);
+      } else {
+        setFormSuccess("İlanınız başarıyla yayınlandı!");
+        setTitle("");
+        setLocation("");
+        setDepartment("");
+        setDescription("");
+        setRequirements("");
+        fetchListings();
+        setTimeout(() => {
+          setIsModalOpen(false);
+          setFormSuccess("");
+        }, 1500);
+      }
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "İlan oluşturulamadı.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleApply = async () => {
+    if (!user) {
+      void navigate({ to: "/giris" });
+      return;
+    }
+    if (!selectedListing || applying) return;
+    setApplying(true);
+    setApplicationMessage("");
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", selectedListing.employer_id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data?.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
+        throw new Error("Firma iletişim adresini paylaşmamış. Şu anda başvuru gönderilemiyor.");
+      window.location.href = `mailto:${encodeURIComponent(data.email)}?subject=${encodeURIComponent(`${selectedListing.title} - Staj başvurusu`)}`;
+      setApplicationMessage(
+        "E-posta uygulamanızda başvurunuzu yazıp gönderin. Bu sayfadan otomatik başvuru gönderilmedi.",
+      );
+    } catch (error) {
+      setApplicationMessage(error instanceof Error ? error.message : "İletişim bilgisi alınamadı.");
+    } finally {
+      setApplying(false);
     }
   };
 
   // Filtreleme
   const filteredListings = listings.filter((item) => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.department.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      (item.title || "")
+        .toLocaleLowerCase("tr-TR")
+        .includes(searchQuery.toLocaleLowerCase("tr-TR")) ||
+      (item.company_name || "")
+        .toLocaleLowerCase("tr-TR")
+        .includes(searchQuery.toLocaleLowerCase("tr-TR")) ||
+      (item.department || "")
+        .toLocaleLowerCase("tr-TR")
+        .includes(searchQuery.toLocaleLowerCase("tr-TR"));
     const matchesType = selectedWorkType === "tumu" || item.work_type === selectedWorkType;
-    return matchesSearch && matchesType;
+    return (
+      matchesSearch &&
+      matchesType &&
+      (!search.city ||
+        (item.location || "")
+          .toLocaleLowerCase("tr-TR")
+          .includes(search.city.toLocaleLowerCase("tr-TR")))
+    );
   });
 
-  const canCreateListing = userProfile && userProfile.role === "isveren" && userProfile.approval_status === "onaylandi";
+  const canCreateListing =
+    userProfile && userProfile.role === "isveren" && userProfile.approval_status === "onaylandi";
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
       <main className="flex-1 container-x py-10">
-        
         {/* Üst Kısım & Başlık */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">Staj İlanları</h1>
-            <p className="text-muted-foreground mt-1">Geleceğinizi şekillendirecek en güncel staj ve çalışma fırsatlarını keşfedin.</p>
+            <p className="text-muted-foreground mt-1">
+              Geleceğinizi şekillendirecek en güncel staj ve çalışma fırsatlarını keşfedin.
+            </p>
           </div>
 
           {/* Sadece onaylı işverenlere görünen "İlan Oluştur" butonu */}
@@ -144,6 +247,16 @@ function IlanlarPage() {
           )}
         </div>
 
+        {search.city && (
+          <button
+            className="mb-3 text-sm text-primary"
+            onClick={() => {
+              void navigate({ search: (previous) => ({ ...previous, city: "" }) });
+            }}
+          >
+            {search.city} filtresini kaldır ×
+          </button>
+        )}
         {/* Arama ve Filtre Çubuğu */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="relative md:col-span-2">
@@ -172,20 +285,30 @@ function IlanlarPage() {
         </div>
 
         {/* İlan Listesi */}
-        {loading ? (
+        {loadError ? (
+          <div role="alert">
+            <p>{loadError}</p>
+            <button onClick={fetchListings}>Yeniden dene</button>
+          </div>
+        ) : loading ? (
           <p className="text-center text-muted-foreground py-20">İlanlar yükleniyor...</p>
         ) : filteredListings.length === 0 ? (
           <div className="text-center py-20 rounded-2xl border border-border bg-card p-8">
             <Briefcase className="size-12 mx-auto text-muted-foreground mb-3 opacity-50" />
             <h3 className="text-lg font-semibold">İlan Bulunamadı</h3>
-            <p className="text-sm text-muted-foreground mt-1">Arama kriterlerinize uygun aktif staj ilanı bulunmuyor.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Arama kriterlerinize uygun aktif staj ilanı bulunmuyor.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredListings.map((item) => (
               <div
                 key={item.id}
-                onClick={() => setSelectedListing(item)}
+                onClick={() => {
+                  setSelectedListing(item);
+                  setApplicationMessage("");
+                }}
                 className="group flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/50 cursor-pointer"
               >
                 <div>
@@ -198,7 +321,9 @@ function IlanlarPage() {
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{item.title}</h3>
+                  <h3 className="font-bold text-lg group-hover:text-primary transition-colors">
+                    {item.title}
+                  </h3>
                   <p className="text-sm font-medium text-muted-foreground flex items-center gap-1.5 mt-1">
                     <Building2 className="size-4 shrink-0" /> {item.company_name}
                   </p>
@@ -233,7 +358,8 @@ function IlanlarPage() {
                   </span>
                   <h2 className="text-2xl font-bold">{selectedListing.title}</h2>
                   <p className="text-muted-foreground font-medium flex items-center gap-1.5 mt-1">
-                    <Building2 className="size-4" /> {selectedListing.company_name} — {selectedListing.location}
+                    <Building2 className="size-4" /> {selectedListing.company_name} —{" "}
+                    {selectedListing.location}
                   </p>
                 </div>
                 <button
@@ -251,20 +377,30 @@ function IlanlarPage() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-primary mb-1">İlan Açıklaması</h4>
-                  <p className="text-muted-foreground whitespace-pre-line">{selectedListing.description}</p>
+                  <p className="text-muted-foreground whitespace-pre-line">
+                    {selectedListing.description}
+                  </p>
                 </div>
                 <div>
                   <h4 className="font-semibold text-primary mb-1">Aranan Nitelikler & Şartlar</h4>
-                  <p className="text-muted-foreground whitespace-pre-line">{selectedListing.requirements}</p>
+                  <p className="text-muted-foreground whitespace-pre-line">
+                    {selectedListing.requirements}
+                  </p>
                 </div>
               </div>
 
               <div className="mt-8 pt-4 border-t border-border flex gap-3">
+                {applicationMessage && (
+                  <p role="status" className="text-sm">
+                    {applicationMessage}
+                  </p>
+                )}
                 <button
-                  onClick={() => alert("Başvurunuz firmaya iletildi! (Demo simülasyonu)")}
+                  onClick={handleApply}
+                  disabled={applying}
                   className="flex-1 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90"
                 >
-                  Hemen Başvur
+                  E-posta ile Başvur
                 </button>
                 <button
                   onClick={() => setSelectedListing(null)}
@@ -283,7 +419,12 @@ function IlanlarPage() {
             <div className="w-full max-w-xl rounded-2xl border border-border bg-card p-6 md:p-8 shadow-xl max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold">Yeni Staj İlanı Yayınla</h2>
-                <button onClick={() => setIsModalOpen(false)} className="text-muted-foreground hover:text-foreground">✕</button>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ✕
+                </button>
               </div>
 
               {formError && (
@@ -299,7 +440,9 @@ function IlanlarPage() {
 
               <form onSubmit={handleCreateListing} className="space-y-4 text-sm">
                 <div>
-                  <label className="font-semibold text-muted-foreground text-xs">İlan Başlığı</label>
+                  <label className="font-semibold text-muted-foreground text-xs">
+                    İlan Başlığı
+                  </label>
                   <input
                     type="text"
                     value={title}
@@ -312,7 +455,9 @@ function IlanlarPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="font-semibold text-muted-foreground text-xs">Şehir / Lokasyon</label>
+                    <label className="font-semibold text-muted-foreground text-xs">
+                      Şehir / Lokasyon
+                    </label>
                     <input
                       type="text"
                       value={location}
@@ -323,7 +468,9 @@ function IlanlarPage() {
                     />
                   </div>
                   <div>
-                    <label className="font-semibold text-muted-foreground text-xs">Çalışma Şekli</label>
+                    <label className="font-semibold text-muted-foreground text-xs">
+                      Çalışma Şekli
+                    </label>
                     <select
                       value={workType}
                       onChange={(e) => setWorkType(e.target.value)}
@@ -349,7 +496,9 @@ function IlanlarPage() {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-muted-foreground text-xs">İlan Açıklaması</label>
+                  <label className="font-semibold text-muted-foreground text-xs">
+                    İlan Açıklaması
+                  </label>
                   <textarea
                     rows={3}
                     value={description}
@@ -361,7 +510,9 @@ function IlanlarPage() {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-muted-foreground text-xs">Aranan Nitelikler</label>
+                  <label className="font-semibold text-muted-foreground text-xs">
+                    Aranan Nitelikler
+                  </label>
                   <textarea
                     rows={3}
                     value={requirements}
@@ -375,6 +526,7 @@ function IlanlarPage() {
                 <div className="flex gap-3 pt-4">
                   <button
                     type="submit"
+                    disabled={creating}
                     className="flex-1 rounded-xl bg-primary py-3 font-semibold text-primary-foreground shadow hover:bg-primary/90"
                   >
                     İlanı Yayınla
@@ -391,7 +543,6 @@ function IlanlarPage() {
             </div>
           </div>
         )}
-
       </main>
       <Footer />
     </div>

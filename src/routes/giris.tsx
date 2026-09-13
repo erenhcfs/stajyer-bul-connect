@@ -25,32 +25,33 @@ function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError(null);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
-    } else {
-      navigate({ to: "/" });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) throw error;
+      await navigate({ to: "/profil" });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "İşlem tamamlanamadı.");
+    } finally {
+      setLoading(false);
     }
   };
-
   const handleSocialLogin = async (provider: "google" | "linkedin_oidc") => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
-    if (error) {
-      setError(error.message);
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: `${window.location.origin}/profil` },
+      });
+      if (error) throw error;
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Giriş başlatılamadı.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,19 +62,20 @@ function LoginPage() {
         <div className="w-full max-w-md space-y-6 rounded-xl border border-border bg-card p-8 shadow-sm">
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-bold tracking-tight">Giriş Yap</h1>
-            <p className="text-sm text-muted-foreground">Hesabınıza erişmek için bilgilerinizi girin.</p>
+            <p className="text-sm text-muted-foreground">
+              Hesabınıza erişmek için bilgilerinizi girin.
+            </p>
           </div>
 
           {error && (
-            <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
+            <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
           )}
 
           {/* Sosyal Medya Butonları */}
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
+              disabled={loading}
               onClick={() => handleSocialLogin("google")}
               className="flex items-center justify-center gap-2 rounded-lg border border-input bg-background py-2.5 text-sm font-medium transition-colors hover:bg-muted"
             >
@@ -99,6 +101,7 @@ function LoginPage() {
             </button>
             <button
               type="button"
+              disabled={loading}
               onClick={() => handleSocialLogin("linkedin_oidc")}
               className="flex items-center justify-center gap-2 rounded-lg border border-input bg-background py-2.5 text-sm font-medium transition-colors hover:bg-muted"
             >

@@ -1,10 +1,23 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL
-const supabaseAnonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase URL veya Anon Key eksik! Vercel ortam değişkenlerini kontrol edin.')
-}
-
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '')
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+const url = import.meta.env["VITE_SUPABASE_URL"]?.trim();
+const key = (
+  import.meta.env["VITE_SUPABASE_ANON_KEY"] || import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"]
+)?.trim();
+export const supabaseConfigured = Boolean(url && /^https?:\/\//.test(url) && key);
+let client: SupabaseClient | undefined;
+// Missing deployment variables must not crash the router at module import time.
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_target, property) {
+    if (!supabaseConfigured)
+      throw new Error("Supabase bağlantısı yapılandırılmamış. Lütfen site yöneticisine bildirin.");
+    client ??= createClient(url!, key!, {
+      auth: {
+        persistSession: typeof window !== "undefined",
+        autoRefreshToken: typeof window !== "undefined",
+        detectSessionInUrl: typeof window !== "undefined",
+      },
+    });
+    const value = Reflect.get(client, property);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});

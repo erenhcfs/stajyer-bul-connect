@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Lock, LogOut, Loader2, CheckCircle2, Globe, Sparkles, FileText, Bot, Image as ImageIcon, Wand2 } from "lucide-react";
+import {
+  Lock,
+  LogOut,
+  Loader2,
+  CheckCircle2,
+  Globe,
+  Sparkles,
+  FileText,
+  Bot,
+  Image as ImageIcon,
+  Wand2,
+} from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -15,8 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { supabase } from "@/lib/supabase";
-import { BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-helpers";
+import { adminRequest } from "@/lib/admin-client";
+import { BLOG_CATEGORIES, slugify, type BlogPost } from "@/lib/blog-helpers";
 
 export const Route = createFileRoute("/blog-yonet")({
   component: BlogYonetimPage,
@@ -30,53 +41,62 @@ function BlogYonetimPage() {
   const [loadingCheck, setLoadingCheck] = useState(true);
 
   useEffect(() => {
-    const isAuth = localStorage.getItem("stajyerbul_admin_auth") === "true";
-    setAuthed(isAuth);
-    setLoadingCheck(false);
+    adminRequest("admin-check")
+      .then((data) => setAuthed(data.authenticated))
+      .catch(() => setAuthed(false))
+      .finally(() => setLoadingCheck(false));
   }, []);
 
   if (loadingCheck) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground"/>
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Navbar/>
+      <Navbar />
       <main className="flex-1">
         <div className="container-x max-w-4xl py-12">
           {authed ? (
-            <AdminPanel onLogout="{()"> {
-              localStorage.removeItem("stajyerbul_admin_auth");
-              setAuthed(false);
-            }} />
+            <AdminPanel
+              onLogout={async () => {
+                try {
+                  await adminRequest("admin-logout", {});
+                  setAuthed(false);
+                } catch (error) {
+                  alert(error instanceof Error ? error.message : "Çıkış yapılamadı.");
+                }
+              }}
+            />
           ) : (
-            <LoginForm onSuccess="{()"> setAuthed(true)} />
+            <LoginForm onSuccess={() => setAuthed(true)} />
           )}
         </div>
       </main>
-      <Footer/>
+      <Footer />
     </div>
   );
 }
 
 function LoginForm({ onSuccess }: { onSuccess: () => void }) {
-  const [username, setUsername] = useState("");
+  const [busy, setBusy] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-
-    if (username.trim() === "admin" && password === "eren") {
-      localStorage.setItem("stajyerbul_admin_auth", "true");
+    setBusy(true);
+    try {
+      await adminRequest("admin-login", { password });
       onSuccess();
-    } else {
-      setError("Kullanıcı adı veya şifre hatalı! (admin / eren)");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Giriş yapılamadı.");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -84,32 +104,33 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
     <Card className="mx-auto max-w-md shadow-lg border-border/85">
       <CardHeader className="items-center text-center pb-2">
         <div className="grid size-12 place-items-center rounded-full bg-primary/10 mb-2">
-          <Lock className="size-6 text-primary"/>
+          <Lock className="size-6 text-primary" />
         </div>
         <h1 className="text-xl font-bold tracking-tight">SEO Blog Yönetim Paneli</h1>
-        <p className="text-sm text-muted-foreground">
-          Lütfen yönetici bilgilerinizi girin.
-        </p>
+        <p className="text-sm text-muted-foreground">Lütfen yönetici bilgilerinizi girin.</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5 text-left">
-            <Label htmlFor="username">Kullanıcı Adı</Label>
-            <Input autoFocus id="username" onChange="{(e)" required type="text" value="{username}"> setUsername(e.target.value)}
-              placeholder="admin"
-              className="h-11 rounded-xl"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5 text-left">
             <Label htmlFor="password">Şifre</Label>
-            <Input id="password" onChange="{(e)" required type="password" value="{password}"> setPassword(e.target.value)}
-              placeholder="••••"
+            <Input
+              autoFocus
+              id="password"
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              type="password"
+              value={password}
+              autoComplete="current-password"
               className="h-11 rounded-xl"
             />
           </div>
           {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-          <Button className="h-11 rounded-xl gap-2 mt-2 font-semibold" type="submit">
-            Giriş Yap
+          <Button
+            className="h-11 rounded-xl gap-2 mt-2 font-semibold"
+            type="submit"
+            disabled={busy}
+          >
+            {busy ? "Giriş yapılıyor..." : "Giriş Yap"}
           </Button>
         </form>
       </CardContent>
@@ -168,108 +189,39 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       return;
     }
 
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      setAiError("Gemini API anahtarı (.env dosyasında VITE_GEMINI_API_KEY) bulunamadı!");
-      return;
-    }
-
     setGeneratingAi(true);
     setAiError("");
-
     try {
-      const response = await fetch(
-        `[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$){apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: `Sen kıdemli bir SEO uzmanısın. "Stajyer Bul" platformu için şu konuda özgün bir blog yazısı yaz: "${aiPrompt}". 
-                    Çıktıyı SADECE ve SADECE şu saf JSON formatında ver (Markdown ekleme):
-                    {
-                      "title": "SEO uyumlu H1 başlık",
-                      "excerpt": "En fazla 160 karakterlik meta açıklama",
-                      "content": "Markdown formatında detaylı makale içeriği"
-                    }`
-                  }
-                ]
-              }
-            ],
-            tools: [{ googleSearch: {} }]
-          }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Gemini API hatası.");
-
-      const data = await response.json();
-      const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!textResult) throw new Error("İçerik alınamadı.");
-
-      const cleanJsonStr = textResult.replace(/```json/g, "").replace(/```/g, "").trim();
-      const parsedData = JSON.parse(cleanJsonStr);
-
-      const generatedTitle = parsedData.title || aiPrompt;
-      const generatedSlug = generatedTitle
-        .toLowerCase()
-        .replace(/ğ/g, "g")
-        .replace(/ü/g, "u")
-        .replace(/ş/g, "s")
-        .replace(/ı/g, "i")
-        .replace(/ö/g, "o")
-        .replace(/ç/g, "c")
-        .replace(/[^a-z0-9\s-]/g, "")
-        .trim()
-        .replace(/\s+/g, "-");
-
+      const { article } = await adminRequest("blog-generate", { prompt: aiPrompt });
       setForm((prev) => ({
         ...prev,
-        title: generatedTitle,
-        slug: generatedSlug,
-        excerpt: parsedData.excerpt || "",
-        content: parsedData.content || "",
+        title: article.title,
+        excerpt: article.excerpt.slice(0, 160),
+        content: article.content,
+        slug: slugify(article.title),
       }));
-
-      await handleGenerateOriginalImage(generatedTitle);
-      setAiPrompt("");
-    } catch (err: any) {
-      console.error(err);
-      setAiError("Makale üretilirken hata oluştu.");
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : "Makale üretilemedi.");
     } finally {
       setGeneratingAi(false);
-    }
-  }
-
-  async function handleGenerateOriginalImage(topicTitle: string) {
-    setGeneratingImage(true);
-    try {
-      await new Promise((r) => setTimeout(r, 800));
-      let img = "[https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80](https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80)";
-      const lower = topicTitle.toLowerCase();
-      if (lower.includes("cnc") || lower.includes("makine")) {
-        img = "[https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80](https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80)";
-      }
-      setForm((prev) => ({ ...prev, image_url: img }));
-    } finally {
-      setGeneratingImage(false);
     }
   }
 
   async function loadPosts() {
     setLoadingPosts(true);
     try {
-      const { data } = await supabase.from("blog_posts").select("*").order("created_at", { ascending: false });
-      setPosts((data ?? []) as BlogPost[]);
+      const { posts } = await adminRequest("blog-posts");
+      setPosts(posts ?? []);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Yazılar yüklenemedi.");
     } finally {
       setLoadingPosts(false);
     }
   }
 
-  useEffect(() => { loadPosts(); }, []);
+  useEffect(() => {
+    loadPosts();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -278,7 +230,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     setSuccess("");
 
     try {
-      const insertData: any = {
+      const insertData: Omit<BlogPost, "id" | "created_at"> = {
         title: form.title,
         slug: form.slug,
         excerpt: form.excerpt,
@@ -293,14 +245,15 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         insertData.image_url = form.image_url.trim();
       }
 
-      const { data, error: err } = await supabase.from("blog_posts").insert([insertData]).select().single();
-      if (err) throw err;
+      const { post: data } = await adminRequest("blog-posts", insertData);
 
-      setSuccess(`Yazı başarıyla yayınlandı: ${data.title}`);
+      setSuccess(
+        `Yazı başarıyla ${data.published ? "yayınlandı" : "taslak olarak kaydedildi"}: ${data.title}`,
+      );
       setForm(emptyForm);
       loadPosts();
-    } catch (err: any) {
-      setError(err.message || "Kayıt sırasında hata oluştu.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Kayıt sırasında hata oluştu.");
     } finally {
       setSubmitting(false);
     }
@@ -314,7 +267,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             <Sparkles className="size-6 text-primary" /> Blog Yönetim Paneli
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            İster manuel yazın, ister yapay zeka ile otomatik yayınlayın.
+            Makalenizi yazın veya yapay zekayla taslak oluşturup kontrol ederek yayınlayın.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onLogout} className="gap-1.5 rounded-xl">
@@ -337,13 +290,17 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             className="rounded-xl bg-background"
           />
           <div className="flex justify-end">
-            <Button 
-              type="button" 
-              onClick={handleGenerateAdvancedGemini} 
+            <Button
+              type="button"
+              onClick={handleGenerateAdvancedGemini}
               disabled={generatingAi || generatingImage}
               className="h-11 rounded-xl gap-2 font-bold px-6"
             >
-              {generatingAi || generatingImage ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
+              {generatingAi || generatingImage ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Wand2 className="size-4" />
+              )}
               {generatingAi ? "Yazılıyor..." : "AI ile Makale Üret"}
             </Button>
           </div>
@@ -351,6 +308,20 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         </CardContent>
       </Card>
 
+      <section aria-label="Mevcut yazılar">
+        <h2 className="font-bold mb-3">Mevcut yazılar</h2>
+        {loadingPosts ? (
+          <p>Yükleniyor...</p>
+        ) : posts.length ? (
+          posts.map((post) => (
+            <p key={post.id}>
+              {post.title} — {post.published ? "Yayında" : "Taslak"}
+            </p>
+          ))
+        ) : (
+          <p>Henüz yazı yok.</p>
+        )}
+      </section>
       <Card className="border-border/80 shadow-sm">
         <CardHeader className="pb-4 border-b bg-muted/20">
           <h2 className="text-base font-bold flex items-center gap-2">
@@ -417,10 +388,41 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
               />
             </div>
 
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-            {success && <p className="text-sm font-semibold text-emerald-600 bg-emerald-500/10 p-3 rounded-xl">{success}</p>}
+            <label className="flex gap-2">
+              <input
+                type="checkbox"
+                checked={form.published}
+                onChange={(e) => setForm({ ...form, published: e.target.checked })}
+              />{" "}
+              Yayınla (kapalıysa taslak kaydedilir)
+            </label>
+            <label>
+              Kategori
+              <select
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+              >
+                {BLOG_CATEGORIES.map((category) => (
+                  <option key={category}>{category}</option>
+                ))}
+              </select>
+            </label>
+            {error && (
+              <p role="alert" className="text-sm font-medium text-destructive">
+                {error}
+              </p>
+            )}
+            {success && (
+              <p className="text-sm font-semibold text-emerald-600 bg-emerald-500/10 p-3 rounded-xl">
+                {success}
+              </p>
+            )}
 
-            <Button type="submit" disabled={submitting} className="h-12 rounded-xl gap-2 font-bold text-base">
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="h-12 rounded-xl gap-2 font-bold text-base"
+            >
               {submitting && <Loader2 className="size-5 animate-spin" />}
               <Globe className="size-5" /> Makaleyi Yayınla
             </Button>

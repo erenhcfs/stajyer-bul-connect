@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Loader2, Calendar, User, ArrowLeft, Share2, Tag, Sparkles } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -8,16 +8,30 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 import { type BlogPost } from "@/lib/blog-helpers";
 
-export const Route = createFileRoute("/blog/$slug")({
+export const Route = createFileRoute("/blog_/$slug")({
   component: BlogDetailPage,
-  head: ({ loaderData }: { loaderData?: BlogPost }) => {
+  loader: async ({ params }) => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("slug", params.slug)
+      .eq("published", true)
+      .maybeSingle();
+    if (error) throw new Error("Blog yazısı yüklenemedi. Lütfen yeniden deneyin.");
+    if (!data) throw notFound();
+    return data as BlogPost;
+  },
+  head: ({ loaderData }) => {
     // Google SEO ve Arama Motoru Optimizasyonu için Dinamik Head Meta Etiketleri
-    const title = loaderData?.title ? `${loaderData.title} | Stajyer Bul` : "Blog Detayı | Stajyer Bul";
+    const title = loaderData?.title
+      ? `${loaderData.title} | Stajyer Bul`
+      : "Blog Detayı | Stajyer Bul";
     const description = loaderData?.excerpt || "Staj ve kariyer rehberi içerikleri.";
-    const image = loaderData?.image_url || "https://stajyerbul.com/og-image.jpg";
-    const url = typeof window !== "undefined" ? window.location.href : "";
+    const image = loaderData?.image_url || "https://stajyerbul.com.tr/logo.png";
+    const url = `https://stajyerbul.com.tr/blog/${encodeURIComponent(loaderData?.slug || "")}`;
 
     return {
+      links: [{ rel: "canonical", href: url }],
       meta: [
         { title },
         { name: "description", content: description },
@@ -54,65 +68,28 @@ export const Route = createFileRoute("/blog/$slug")({
         : [],
     };
   },
-  loader: async ({ params }) => {
-    const { data } = await supabase
-      .from("blog_posts")
-      .select("*")
-      .eq("slug", params.slug)
-      .single();
-    return data as BlogPost | null;
-  },
 });
 
 function BlogDetailPage() {
-  const { slug } = useParams({ from: "/blog/$slug" });
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [loading, setLoading] = useState(true);
+  const post = Route.useLoaderData();
   const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
-
   useEffect(() => {
-    async function fetchPostAndMore() {
-      setLoading(true);
-      try {
-        // Yazıyı çek
-        const { data, error } = await supabase
-          .from("blog_posts")
-          .select("*")
-          .eq("slug", slug)
-          .single();
-
-        if (error) throw error;
-        setPost(data as BlogPost);
-
-        // Diğer son yazarları/yazıları çek (SEO iç linkleme için)
-        const { data: others } = await supabase
-          .from("blog_posts")
-          .select("*")
-          .neq("slug", slug)
-          .limit(3);
-
-        setRecentPosts((others ?? []) as BlogPost[]);
-      } catch (err) {
-        console.error("Blog yüklenirken hata:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchPostAndMore();
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen flex-col bg-background">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="size-8 animate-spin text-primary" />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+    let active = true;
+    setRecentPosts([]);
+    void supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("published", true)
+      .neq("slug", post.slug)
+      .order("created_at", { ascending: false })
+      .limit(3)
+      .then(({ data }) => {
+        if (active) setRecentPosts((data ?? []) as BlogPost[]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [post.slug]);
 
   if (!post) {
     return (
@@ -120,7 +97,9 @@ function BlogDetailPage() {
         <Navbar />
         <main className="flex-1 container-x max-w-2xl py-20 text-center">
           <h1 className="text-2xl font-bold">Yazı Bulunamadı</h1>
-          <p className="text-muted-foreground mt-2 mb-6">Aradığınız blog yazısı silinmiş veya taşınmış olabilir.</p>
+          <p className="text-muted-foreground mt-2 mb-6">
+            Aradığınız blog yazısı silinmiş veya taşınmış olabilir.
+          </p>
           <Button asChild className="rounded-xl">
             <Link to="/blog">Blog Anasayfasına Dön</Link>
           </Button>
@@ -138,7 +117,12 @@ function BlogDetailPage() {
         <article className="container-x max-w-3xl">
           {/* Geri Dön Tuşu */}
           <div className="mb-6">
-            <Button variant="ghost" size="sm" asChild className="gap-2 rounded-xl text-muted-foreground hover:text-foreground">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="gap-2 rounded-xl text-muted-foreground hover:text-foreground"
+            >
               <Link to="/blog">
                 <ArrowLeft className="size-4" /> Tüm Blog Yazıları
               </Link>
@@ -151,7 +135,12 @@ function BlogDetailPage() {
               <Tag className="size-3" /> {post.category || "Staj Rehberi"}
             </span>
             <span className="flex items-center gap-1 text-xs">
-              <Calendar className="size-3.5" /> {new Date(post.created_at).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}
+              <Calendar className="size-3.5" />{" "}
+              {new Date(post.created_at).toLocaleDateString("tr-TR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
             </span>
           </div>
 
@@ -167,18 +156,29 @@ function BlogDetailPage() {
                 {post.author_initials || "SB"}
               </div>
               <div>
-                <p className="text-sm font-bold text-foreground">{post.author_name || "Stajyer Bul Ekibi"}</p>
+                <p className="text-sm font-bold text-foreground">
+                  {post.author_name || "Stajyer Bul Ekibi"}
+                </p>
                 <p className="text-xs text-muted-foreground">Uzman Kariyer Danışmanı</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="rounded-xl gap-2" onClick={() => {
-              if (navigator.share) {
-                navigator.share({ title: post.title, url: window.location.href });
-              } else {
-                navigator.clipboard.writeText(window.location.href);
-                alert("Bağlantı kopyalandı!");
-              }
-            }}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl gap-2"
+              onClick={async () => {
+                try {
+                  if (navigator.share) {
+                    await navigator.share({ title: post.title, url: window.location.href });
+                  } else {
+                    await navigator.clipboard.writeText(window.location.href);
+                    alert("Bağlantı kopyalandı!");
+                  }
+                } catch {
+                  /* Sharing may be cancelled by the user. */
+                }
+              }}
+            >
               <Share2 className="size-4" /> Paylaş
             </Button>
           </div>
@@ -221,7 +221,11 @@ function BlogDetailPage() {
                   >
                     {item.image_url && (
                       <div className="mb-3 aspect-video overflow-hidden rounded-xl bg-muted">
-                        <img src={item.image_url} alt={item.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <img
+                          src={item.image_url}
+                          alt={item.title}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
                       </div>
                     )}
                     <h4 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors">

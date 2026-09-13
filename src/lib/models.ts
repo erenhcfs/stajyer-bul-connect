@@ -1,0 +1,37 @@
+export type Profile = {
+  id: string;
+  role: string;
+  approval_status?: string | null;
+  full_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  location?: string | null;
+  school?: string | null;
+  grade?: string | null;
+  department?: string | null;
+  age?: number | null;
+  skills?: string | null;
+  avatar_url?: string | null;
+  internship_term?: string | null;
+  company_name?: string | null;
+  tax_number?: string | null;
+  sector?: string | null;
+  logo_url?: string | null;
+  banner_url?: string | null;
+  about?: string | null;
+  is_looking_for_internship?: boolean | null;
+  created_at?: string;
+};
+export type JobListing = {
+  id: string;
+  employer_id: string;
+  title: string;
+  company_name: string | null;
+  location: string | null;
+  work_type: string | null;
+  department: string | null;
+  description: string | null;
+  requirements: string | null;
+  created_at: string;
+};

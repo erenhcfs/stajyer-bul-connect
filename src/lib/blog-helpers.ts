@@ -1,4 +1,5 @@
 export type BlogPost = {
+  image_url?: string | null;
   id: string;
   slug: string;
   title: string;
