@@ -36,6 +36,15 @@ export const Route = createFileRoute("/")({
           "staj, staj bul, stajyer bul, staj ilanları, stajyer arayan firmalar, staj arayan öğrenciler, staj platformu, öğrenci staj, stajyer bulma",
       },
       {
+        rel: "icon",
+        href: "/favicon.ico",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        href: "/favicon.png",
+      },
+      {
         property: "og:title",
         content: "StajyerBul | Staj Arayanlar ve İşletmelerin Buluşma Noktası",
       },
