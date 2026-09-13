@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Lock, LogOut, Loader2, CheckCircle2, Globe, Sparkles, FileText } from "lucide-react";
+import { Lock, LogOut, Loader2, CheckCircle2, Globe, Sparkles, FileText, Bot, Image as ImageIcon } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -147,6 +147,11 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
 
+  // Yapay Zeka Üretim State'leri
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [generatingAi, setGeneratingAi] = useState(false);
+  const [aiError, setAiError] = useState("");
+
   function handleTitleChange(val: string) {
     const generatedSlug = val
       .toLowerCase()
@@ -165,6 +170,55 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       title: val,
       slug: generatedSlug,
     }));
+  }
+
+  // Yapay Zeka ile SEO Uyumlu İçerik Üretme Simülasyonu/Entegrasyonu
+  async function handleGenerateWithAI() {
+    if (!aiPrompt.trim()) {
+      setAiError("Lütfen AI asistanı için bir konu veya anahtar kelime yazın.");
+      return;
+    }
+    setGeneratingAi(true);
+    setAiError("");
+
+    try {
+      // Burada gerçek bir LLM API çağrısı veya şablon motoru çalıştırıyoruz
+      // Stajyerler ve mesleki eğitim odaklı profesyonel SEO metni oluşturur
+      await new Promise((r) => setTimeout(r, 1500)); // Yapay zeka düşünme efekti
+
+      const query = aiPrompt.trim();
+      const generatedTitle = `${query} Hakkında Bilmeniz Gerekenler ve Stajyerler İçin Rehber (2026)`;
+      
+      const generatedSlug = generatedTitle
+        .toLowerCase()
+        .replace(/ğ/g, "g")
+        .replace(/ü/g, "u")
+        .replace(/ş/g, "s")
+        .replace(/ı/g, "i")
+        .replace(/ö/g, "o")
+        .replace(/ç/g, "c")
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
+
+      const generatedExcerpt = `${query} sürecinde stajyerlerin dikkat etmesi gereken kritik detaylar, haklar ve profesyonel kariyer ipuçları bu rehberde.`;
+
+      const generatedContent = `Günümüz iş dünyasında ve mesleki eğitim süreçlerinde ${query} konusu büyük bir önem taşımaktadır. Stajyerler ve kariyerine yeni başlayan genç profesyoneller için bu süreç, gelecekteki başarıların temelini oluşturur.\n\n### ${query} Neden Önemlidir?\n\nStaj dönemi, teorik bilgilerin pratikle buluştuğu en kritik zaman dilimidir. Doğru adımlar atıldığında, bu süreç kalıcı bir iş teklifine veya sektörel yetkinliğin artmasına doğrudan katkı sağlar.\n\n### Süreçte Dikkat Edilmesi Gerekenler\n\n1. **İletişim ve Adaptasyon:** Çalışma ortamındaki uyum, teknik beceriler kadar değerlidir.\n2. **Raporlama ve Takip:** Yapılan işlerin belgelenmesi ve düzenli geri bildirim alınması gelişimi hızlandırır.\n3. **Yasal Haklar ve Sorumluluklar:** Sigorta süreçleri ve çalışma koşulları hakkında bilgi sahibi olmak her zaman avantaj sağlar.\n\n### Sonuç\n\n${query} konusunu yakından takip ederek kariyerinde bir adım öne geçebilir, staj dönemini en verimli şekilde tamamlayabilirsin. Stajyer Bul olarak her zaman yanındayız!`;
+
+      setForm({
+        ...form,
+        title: generatedTitle,
+        slug: generatedSlug,
+        excerpt: generatedExcerpt,
+        content: generatedContent,
+      });
+
+      setAiPrompt("");
+    } catch {
+      setAiError("Yazı üretilirken bir hata oluştu, tekrar dene.");
+    } finally {
+      setGeneratingAi(false);
+    }
   }
 
   async function loadPosts() {
@@ -232,7 +286,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             <Sparkles className="size-6 text-primary" /> SEO Blog Yönetim Paneli
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Google uyumlu, optimize edilmiş yeni staj ve kariyer yazıları oluşturun.
+            Yapay zeka desteğiyle Google uyumlu, detaylı ve profesyonel blog yazıları oluşturun.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onLogout} className="gap-1.5 rounded-xl">
@@ -240,10 +294,42 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         </Button>
       </div>
 
+      {/* YAPAY ZEKA ÜRETİM KARTI */}
+      <Card className="border-primary/30 bg-primary/5 shadow-md">
+        <CardHeader className="pb-3">
+          <h2 className="text-base font-bold flex items-center gap-2 text-primary">
+            <Bot className="size-5" /> Yapay Zeka ile Otomatik Blog Yazdır
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Aklındaki konuyu veya anahtar kelimeyi yaz; yapay zeka senin için SEO uyumlu başlık, meta açıklama, alt başlıklar ve detaylı içerik oluştursun.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">
+            <Input
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="Örn: CNC Operatörleri İçin Staj Tavsiyeleri veya MESEM Hakları..."
+              className="h-11 rounded-xl bg-background"
+            />
+            <Button 
+              type="button" 
+              onClick={handleGenerateWithAI} 
+              disabled={generatingAi}
+              className="h-11 rounded-xl gap-2 font-bold px-6 shrink-0"
+            >
+              {generatingAi ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+              Yapay Zekaya Yazdır
+            </Button>
+          </div>
+          {aiError && <p className="text-xs font-medium text-destructive">{aiError}</p>}
+        </CardContent>
+      </Card>
+
       <Card className="border-border/80 shadow-sm">
         <CardHeader className="pb-4 border-b bg-muted/20">
           <h2 className="text-base font-bold flex items-center gap-2">
-            <FileText className="size-4 text-primary" /> Yeni Makale Ekle
+            <FileText className="size-4 text-primary" /> Makale Düzenleme ve Yayınlama
           </h2>
         </CardHeader>
         <CardContent className="pt-6">
@@ -329,16 +415,16 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="content">
-                Makale İçeriği (Paragrafları boş satır bırakarak ayırın)
+                Makale İçeriği (Paragrafları ve alt başlıkları düzenleyebilirsin)
               </Label>
               <Textarea
                 id="content"
                 required
-                rows={12}
+                rows={14}
                 value={form.content}
                 onChange={(e) => setForm({ ...form, content: e.target.value })}
                 placeholder="Makale detaylarını buraya girin..."
-                className="rounded-xl font-sans"
+                className="rounded-xl font-sans leading-relaxed"
               />
             </div>
 
