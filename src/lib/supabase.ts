@@ -1,6 +1,16 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = 'https://ejaaynmdtbkskddxmoxr.supabase.co'
-const supabaseKey = 'sb_publishable_ujFucOu3HozYuu-BAVspHQ_oJnCyiaS'
+// NOT: Projende zaten bir "src/lib/supabase.ts" (veya benzeri) dosyan
+// varsa onu kullan, bu dosyayı eklemene gerek yok — sadece "blog_posts"
+// tablosuna erişim için aynı client'ı kullanman yeterli.
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    "VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY ortam değişkenleri tanımlı değil.",
+  );
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

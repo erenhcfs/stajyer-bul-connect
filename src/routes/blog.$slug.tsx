@@ -1,41 +1,98 @@
+import { Fragment } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Calendar,
-  Clock,
-  BookOpen,
-} from "lucide-react";
+import { ArrowLeft, Calendar, Clock, BookOpen } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
-import { POSTS } from "@/lib/blog-posts";
+import { supabase } from "@/lib/supabase";
+import { AdUnit } from "@/components/AdUnit";
+import {
+  categoryGradient,
+  estimateReadTime,
+  formatPostDate,
+  type BlogPost,
+} from "@/lib/blog-helpers";
+
+const SITE_URL = "https://stajyerbul.com"; // kendi canlı domaninle değiştir
 
 export const Route = createFileRoute("/blog/$slug")({
   component: BlogDetailPage,
-  loader: ({ params }) => {
-    const post = POSTS.find((p) => p.slug === params.slug);
-    if (!post) throw notFound();
-    return post;
+  loader: async ({ params }) => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("slug", params.slug)
+      .eq("published", true)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw notFound();
+
+    const { data: related } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("category", data.category)
+      .eq("published", true)
+      .neq("slug", data.slug)
+      .limit(3);
+
+    return { post: data as BlogPost, related: (related ?? []) as BlogPost[] };
+  },
+  head: ({ loaderData }) => {
+    if (!loaderData) return {};
+    const { post } = loaderData;
+    const url = `${SITE_URL}/blog/${post.slug}`;
+    return {
+      meta: [
+        { title: `${post.title} | Stajyer Bul Blog` },
+        { name: "description", content: post.excerpt },
+        { property: "og:type", content: "article" },
+        { property: "og:title", content: post.title },
+        { property: "og:description", content: post.excerpt },
+        { property: "og:url", content: url },
+        { property: "article:published_time", content: post.created_at },
+        { property: "article:section", content: post.category },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: post.title },
+        { name: "twitter:description", content: post.excerpt },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
   },
 });
 
 function BlogDetailPage() {
-  const post = Route.useLoaderData();
+  const { post, related } = Route.useLoaderData();
+  const url = `${SITE_URL}/blog/${post.slug}`;
+  const paragraphs = post.content.split(/\n{2,}/).filter(Boolean);
+  const midpoint = Math.ceil(paragraphs.length / 2);
 
-  const related = POSTS.filter(
-    (p) => p.category === post.category && p.slug !== post.slug,
-  ).slice(0, 3);
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt,
+    author: { "@type": "Person", name: post.author_name },
+    datePublished: post.created_at,
+    articleSection: post.category,
+    mainEntityOfPage: url,
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
 
       <main className="flex-1">
         {/* Cover */}
         <div
-          className={`flex h-56 items-center justify-center bg-gradient-to-br ${post.gradient} sm:h-72`}
+          className={`flex h-56 items-center justify-center bg-gradient-to-br ${categoryGradient(
+            post.category,
+          )} sm:h-72`}
         >
           <BookOpen className="size-14 text-foreground/20" />
         </div>
@@ -59,32 +116,39 @@ function BlogDetailPage() {
           <div className="mt-5 flex items-center gap-3">
             <Avatar className="size-9">
               <AvatarFallback className="text-xs">
-                {post.author.initials}
+                {post.author_initials}
               </AvatarFallback>
             </Avatar>
             <div className="text-sm">
               <p className="font-medium text-foreground">
-                {post.author.name}
+                {post.author_name}
               </p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <Calendar className="size-3" />
-                  {post.date}
+                  {formatPostDate(post.created_at)}
                 </span>
                 <span>·</span>
                 <span className="inline-flex items-center gap-1">
                   <Clock className="size-3" />
-                  {post.readTime}
+                  {estimateReadTime(post.content)}
                 </span>
               </div>
             </div>
           </div>
 
           <div className="mt-8 space-y-5 text-base leading-relaxed text-foreground/90">
-            {post.content.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
+            {paragraphs.map((paragraph, index) => (
+              <Fragment key={index}>
+                <p>{paragraph}</p>
+                {index === midpoint - 1 && paragraphs.length > 2 && (
+                  <AdUnit slot="0000000001" className="my-6 min-h-[120px]" />
+                )}
+              </Fragment>
             ))}
           </div>
+
+          <AdUnit slot="0000000002" className="mt-10 min-h-[120px]" />
         </article>
 
         {/* Related posts */}
@@ -102,7 +166,7 @@ function BlogDetailPage() {
                         {r.title}
                       </p>
                       <p className="mt-3 text-xs text-muted-foreground">
-                        {r.readTime}
+                        {estimateReadTime(r.content)}
                       </p>
                     </Card>
                   </Link>
