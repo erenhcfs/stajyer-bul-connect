@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Lock, LogOut, Loader2, CheckCircle2, Globe, Sparkles, FileText, Trash2 } from "lucide-react";
+import { Lock, LogOut, Loader2, CheckCircle2, Globe, Sparkles, FileText } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from "@/lib/supabase";
 import { BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-helpers";
 
 export const Route = createFileRoute("/blog-yonet")({
@@ -25,28 +26,33 @@ export const Route = createFileRoute("/blog-yonet")({
 });
 
 function BlogYonetimPage() {
-  const [checking, setChecking] = useState(true);
   const [authed, setAuthed] = useState(false);
+  const [loadingCheck, setLoadingCheck] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin-check", { credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => setAuthed(Boolean(d.authenticated)))
-      .catch(() => setAuthed(false))
-      .finally(() => setChecking(false));
+    const isAuth = localStorage.getItem("stajyerbul_admin_auth") === "true";
+    setAuthed(isAuth);
+    setLoadingCheck(false);
   }, []);
+
+  if (loadingCheck) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
       <main className="flex-1">
         <div className="container-x max-w-4xl py-12">
-          {checking ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="size-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : authed ? (
-            <AdminPanel onLogout={() => setAuthed(false)} />
+          {authed ? (
+            <AdminPanel onLogout={() => {
+              localStorage.removeItem("stajyerbul_admin_auth");
+              setAuthed(false);
+            }} />
           ) : (
             <LoginForm onSuccess={() => setAuthed(true)} />
           )}
@@ -60,42 +66,29 @@ function BlogYonetimPage() {
 function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError("");
-    try {
-      const res = await fetch("/api/admin-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ username, password }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || "Giriş başarısız. Kullanıcı adı veya şifre hatalı.");
-        return;
-      }
+
+    if (username.trim() === "admin" && password === "eren") {
+      localStorage.setItem("stajyerbul_admin_auth", "true");
       onSuccess();
-    } catch {
-      setError("Bağlantı hatası oluştu, tekrar dene.");
-    } finally {
-      setLoading(false);
+    } else {
+      setError("Kullanıcı adı veya şifre hatalı! (admin / eren)");
     }
   }
 
   return (
-    <Card className="mx-auto max-w-md shadow-lg border-border/80">
+    <Card className="mx-auto max-w-md shadow-lg border-border/85">
       <CardHeader className="items-center text-center pb-2">
         <div className="grid size-12 place-items-center rounded-full bg-primary/10 mb-2">
           <Lock className="size-6 text-primary" />
         </div>
         <h1 className="text-xl font-bold tracking-tight">SEO Blog Yönetim Paneli</h1>
         <p className="text-sm text-muted-foreground">
-          Yönetici bilgileri ile giriş yapın.
+          Lütfen yönetici bilgilerinizi girin.
         </p>
       </CardHeader>
       <CardContent>
@@ -126,9 +119,8 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
             />
           </div>
           {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-          <Button type="submit" disabled={loading} className="h-11 rounded-xl gap-2 mt-2 font-semibold">
-            {loading && <Loader2 className="size-4 animate-spin" />}
-            Güvenli Giriş Yap
+          <Button type="submit" className="h-11 rounded-xl gap-2 mt-2 font-semibold">
+            Giriş Yap
           </Button>
         </form>
       </CardContent>
@@ -155,7 +147,6 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
 
-  // Başlığa göre otomatik SEO uyumlu slug oluşturan fonksiyon
   function handleTitleChange(val: string) {
     const generatedSlug = val
       .toLowerCase()
@@ -179,9 +170,15 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   async function loadPosts() {
     setLoadingPosts(true);
     try {
-      const res = await fetch("/api/blog-posts", { credentials: "include" });
-      const data = await res.json();
-      setPosts(data.posts ?? []);
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setPosts((data ?? []) as BlogPost[]);
+    } catch (err) {
+      console.error("Yazılar yüklenirken hata:", err);
     } finally {
       setLoadingPosts(false);
     }
@@ -198,30 +195,33 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     setSuccess("");
 
     try {
-      const res = await fetch("/api/blog-posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Yazı kaydedilemedi.");
-        return;
-      }
-      setSuccess(`Harika! "${data.post.title}" başarıyla yayınlandı → /blog/${data.post.slug}`);
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .insert([
+          {
+            title: form.title,
+            slug: form.slug,
+            excerpt: form.excerpt,
+            content: form.content,
+            category: form.category,
+            author_name: form.author_name,
+            author_initials: form.author_initials,
+            published: form.published,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setSuccess(`Harika! "${data.title}" başarıyla yayınlandı → /blog/${data.slug}`);
       setForm(emptyForm);
       loadPosts();
-    } catch {
-      setError("Bağlantı hatası oluştu, tekrar dene.");
+    } catch (err: any) {
+      setError(err.message || "Yazı kaydedilirken bir veritabanı hatası oluştu.");
     } finally {
       setSubmitting(false);
     }
-  }
-
-  async function handleLogout() {
-    await fetch("/api/admin-logout", { method: "POST", credentials: "include" });
-    onLogout();
   }
 
   return (
@@ -235,7 +235,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             Google uyumlu, optimize edilmiş yeni staj ve kariyer yazıları oluşturun.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5 rounded-xl">
+        <Button variant="outline" size="sm" onClick={onLogout} className="gap-1.5 rounded-xl">
           <LogOut className="size-4" /> Çıkış Yap
         </Button>
       </div>
@@ -288,7 +288,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 maxLength={160}
                 value={form.excerpt}
                 onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-                placeholder="Staj arayan öğrenciler için başvuru adımları ve mülakat taktikleri..."
+                placeholder="Staj arayan öğrenciler için başvuru adımları..."
                 className="rounded-xl"
               />
               <span className="text-xs text-muted-foreground text-right">
