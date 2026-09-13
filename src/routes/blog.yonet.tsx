@@ -19,7 +19,6 @@ import { BLOG_CATEGORIES, type BlogPost } from "@/lib/blog-helpers";
 
 export const Route = createFileRoute("/blog/yonet")({
   component: BlogAdminPage,
-  // Bu sayfayı arama motorlarından tamamen gizle.
   head: () => ({
     meta: [{ name: "robots", content: "noindex, nofollow" }],
   }),
@@ -59,6 +58,7 @@ function BlogAdminPage() {
 }
 
 function LoginForm({ onSuccess }: { onSuccess: () => void }) {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -72,7 +72,7 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -95,21 +95,36 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
         <h1 className="mt-2 text-lg font-bold">Blog Yönetimi</h1>
         <p className="text-sm text-muted-foreground">
-          Devam etmek için admin şifresini gir.
+          Devam etmek için kullanıcı adı ve şifreni gir.
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <Input
-            type="password"
-            required
-            autoFocus
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Şifre"
-          />
+          <div className="flex flex-col gap-1.5 text-left">
+            <Label htmlFor="username">Kullanıcı Adı</Label>
+            <Input
+              id="username"
+              type="text"
+              required
+              autoFocus
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="admin"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5 text-left">
+            <Label htmlFor="password">Şifre</Label>
+            <Input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••"
+            />
+          </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" disabled={loading} className="gap-2">
+          <Button type="submit" disabled={loading} className="gap-2 mt-2">
             {loading && <Loader2 className="size-4 animate-spin" />}
             Giriş Yap
           </Button>
