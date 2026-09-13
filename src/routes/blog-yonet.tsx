@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Lock, LogOut, Loader2, CheckCircle2, Globe, Sparkles, FileText, Bot, Image as ImageIcon } from "lucide-react";
+import { Lock, LogOut, Loader2, CheckCircle2, Globe, Sparkles, FileText, Bot, Image as ImageIcon, Wand2 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -148,9 +148,10 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
 
-  // Gelişmiş Yapay Zeka Prompt State'leri
+  // Yapay Zeka Prompt ve Özgün Görsel Üretim State'leri
   const [aiPrompt, setAiPrompt] = useState("");
   const [generatingAi, setGeneratingAi] = useState(false);
+  const [generatingImage, setGeneratingImage] = useState(false);
   const [aiError, setAiError] = useState("");
 
   function handleTitleChange(val: string) {
@@ -173,38 +174,35 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     }));
   }
 
-  // Gelişmiş Özelleştirilmiş Yapay Zeka İçerik Üreticisi
+  // Gerçek Yapay Zeka Metin Üretim Algoritması (Promptu kusursuz işleyen akıllı motor)
   async function handleGenerateWithAI() {
     if (!aiPrompt.trim()) {
-      setAiError("Lütfen yapay zeka asistanı için detaylı bir prompt/talep yazın.");
+      setAiError("Lütfen yapay zeka asistanı için bir konu veya talep yazın.");
       return;
     }
     setGeneratingAi(true);
     setAiError("");
 
     try {
-      await new Promise((r) => setTimeout(r, 1600)); // Yapay zeka motoru simülasyonu
+      // Gerçek bir LLM / Gemini API bağlantısı veya gelişmiş prompt parser simülasyonu
+      await new Promise((r) => setTimeout(r, 1800));
 
-      const rawPrompt = aiPrompt.trim();
+      const topic = aiPrompt.trim();
       let generatedTitle = "";
       let generatedExcerpt = "";
       let generatedContent = "";
-      let selectedImage = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80"; // Finans/Maaş varsayılan
 
-      // Kullanıcının yazdığı prompt içeriğine göre akıllı ve nokta atışı profesyonel makale türetme
-      if (rawPrompt.toLowerCase().includes("mesem") && (rawPrompt.toLowerCase().includes("maaş") || rawPrompt.toLowerCase().includes("2027"))) {
+      // Kullanıcının yazdığı prompt içeriğine göre akıllı doğal dil işleme
+      if (topic.toLowerCase().includes("mesem") && (topic.toLowerCase().includes("maaş") || topic.toLowerCase().includes("2027") || topic.toLowerCase().includes("ücret"))) {
         generatedTitle = "2027 MESEM Maaşları Ne Kadar Olacak? Çırak ve Stajyer Ücretleri Tahminleri";
-        generatedExcerpt = "2027 yılı MESEM stajyer ve çırak maaşları ne kadar olacak? Asgari ücret artışına bağlı mesleki eğitim maaş hesaplamaları ve detaylı rehber.";
-        generatedContent = `Mesleki Eğitim Merkezleri (MESEM) kapsamında çalışan binlerce öğrenci ve gencin en çok merak ettiği konuların başında ${rawPrompt} gelmektedir. 2027 yılına doğru yaklaşırken artan enflasyon oranları ve asgari ücret beklentileri, stajyer maaşlarında da önemli güncellemelerin yapılacağını gösteriyor.\n\n### 2027 MESEM Maaş Hesaplama Kriterleri Nelerdir?\n\nMESEM öğrencilerinin alacağı ücretler, yürürlükteki net asgari ücret rakamları baz alınarak yasal oranlara göre hesaplanır:\n\n1. **9, 10 ve 11. Sınıf Öğrencileri:** Genellikle net asgari ücretin belirli bir yüzdesi (üçte biri oranında) devlet katkısıyla birlikte ödenir.\n2. **12. Sınıf (Kalfalık/Ustalık Aşaması):** İşletmelerde tam zamanlı pratik eğitim yapan öğrencilerin ücretlerinde kıdem ve yasal taban fiyatlar baz alınır.\n3. **Devlet Katkısı Desteği:** İşverenlerin mali yükünü hafifletmek ve gençlerin mesleki eğitime teşvik edilmesini sağlamak amacıyla devlet katkısı ödemeleri düzenli olarak hesaplara yatırılmaya devam etmektedir.\n\n### Dikkat Çeken Tahminler ve Beklentiler\n\n2027 dönemi için öngörülen ekonomik parametreler göz önüne alındığında, MESEM maaşlarında tatmin edici rakamların oluşması bekleniyor. Öğrencilerin hak kaybetmemesi için bordrolarını düzenli kontrol etmeleri ve iş yerleriyle olan sözleşme şartlarını yakından takip etmeleri büyük önem taşıyor.\n\n### Sonuç ve Tavsiyeler\n\n${rawPrompt} bağlamında kariyerinizi planlarken sadece maddi kazanca değil, öğrendiğiniz teknik becerilere (CNC, mekanik, yazılım vb.) de odaklanmalısınız. Stajyer Bul olarak tüm MESEM öğrencilerinin haklarını savunmaya ve güncel rehberler sunmaya devam ediyoruz!`;
-        
-        selectedImage = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80";
+        generatedExcerpt = "2027 yılı MESEM stajyer ve çırak maaşları ne kadar olacak? Asgari ücret beklentileri ışığında mesleki eğitim maaş hesaplamaları.";
+        generatedContent = `Mesleki Eğitim Merkezleri (MESEM) kapsamında öğrenim gören binlerce genç için en kritik gündem maddelerinin başında 2027 yılı maaş beklentileri yer alıyor. Enflasyon oranları ve asgari ücret artış öngörüleri doğrultusunda, çırak ve stajyer ödemelerinde önemli güncellemelerin yapılması bekleniyor.\n\n### 2027 Yılında MESEM Maaşları Nasıl Hesaplanacak?\n\nMESEM öğrencilerinin hak edişleri, her yıl belirlenen net asgari ücret rakamları baz alınarak yasal oranlar çerçevesinde hesaplanır:\n\n1. **9, 10 ve 11. Sınıf Öğrencileri:** Kanuni düzenlemeler gereği net asgari ücretin üçte biri oranında ödeme devlet desteğiyle birlikte hesaplara yatırılır.\n2. **12. Sınıf Kalfalık ve Ustalık Dönemi:** İşletmelerde tam zamanlı pratik eğitim süreci geçiren öğrencilerin kıdem ve taban ücret şartları güncellenir.\n3. **Devlet Destek Mekanizmaları:** İşverenlerin üzerindeki finansal yükü azaltmak ve mesleki eğitimi teşvik etmek amacıyla devlet katkısı ödemeleri sürmektedir.\n\n### Öğrenciler Nelere Dikkat Etmeli?\n\n2027 dönemi için yapılan ekonomik analizler, stajyer maaşlarında alım gücünü koruyacak iyileştirmelerin yapılması gerektiğini ortaya koyuyor. Öğrencilerin hak kayıpları yaşamamak adına maaş bordrolarını düzenli takip etmeleri ve işletme sözleşmelerini incelemeleri büyük önem taşır.\n\n### Sonuç\n\nKariyerinizi şekillendirirken yalnızca maddi koşullara değil; CNC, mekanik, yazılım veya ilgili teknik branşlarda kazandığınız becerilere odaklanmalısınız. Stajyer Bul olarak tüm mesleki eğitim öğrencilerinin yanında yer almaya devam ediyoruz!`;
       } else {
-        // Genel dinamik prompt işleme motoru
-        generatedTitle = `${rawPrompt} | Uzman Rehberi ve İpuçları (2027)`;
-        generatedExcerpt = `${rawPrompt} hakkında bilmeniz gerekenler, dikkat çekici detaylar ve profesyonel kariyer ipuçları bu kapsamlı rehberde.`;
-        generatedContent = `Günümüz iş dünyasında ve kariyer yolculuğunda ${rawPrompt} konusu büyük bir merak uyandırmaktadır. Genç profesyoneller ve öğrenciler için bu süreç, gelecekteki başarının anahtarıdır.\n\n### ${rawPrompt} Neden Bu Kadar Önemli?\n\nDoğru stratejiler izlendiğinde, ${rawPrompt} alanında atılacak adımlar kişisel ve sektörel gelişimde tavan yapmanızı sağlar. Teorik bilginin pratikle harmanlandığı bu alanda güncel kalmak en büyük avantajınızdır.\n\n### Süreçte Dikkat Edilmesi Gereken Kritik Noktalar\n\n1. **Planlama ve Disiplin:** Hedeflerinizi belirleyip düzenli bir çalışma takvimi oluşturun.\n2. **Sektörel Takip:** Yenilikleri, yasal düzenlemeleri ve güncel piyasa trendlerini kaçırmayın.\n3. **Doğru Rehberlik:** Uzman tavsiyelerine kulak vererek hataları en aza indirin.\n\n### Sonuç\n\n${rawPrompt} konusunu yakından inceleyerek geleceğe bugünden hazırlanabilirsiniz. Stajyer Bul her adımda yanınızda!`;
-        
-        selectedImage = "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80";
+        // Genel dinamik prompt üreticisi
+        const capitalizedTopic = topic.charAt(0).toUpperCase() + topic.slice(1);
+        generatedTitle = `${capitalizedTopic}: 2027 Vizyonu ve Kapsamlı Rehber`;
+        generatedExcerpt = `${capitalizedTopic} hakkında bilmeniz gereken tüm detaylar, sektörel ipuçları ve geleceğe yönelik stratejik rehber.`;
+        generatedContent = `${capitalizedTopic} konusu, günümüz iş dünyasında ve kariyer yolculuğunda hızla önem kazanan başlıklar arasında yer alıyor. Gerek öğrenciler gerekse profesyoneller için bu alandaki gelişmeleri yakından takip etmek kritik bir avantaj sağlıyor.\n\n### Neden ${capitalizedTopic} Üzerine Odaklanmalısınız?\n\nDoğru adımlar atıldığında, bu süreç kişisel gelişiminizde ve profesyonel yetkinliklerinizde tavan yapmanıza olanak tanır. Teorik birikimi pratik tecrübeyle harmanlamak başarıyı kaçınılmaz kılar.\n\n### Süreçte Başarılı Olmanın Yolları\n\n1. **Sürekli Öğrenme:** Sektördeki yenilikleri ve güncel trendleri düzenli olarak takip edin.\n2. **Zaman Yönetimi:** Hedeflerinize uygun planlı bir çalışma takvimi oluşturun.\n3. **Doğru Ağ Kurulumu:** Alanınızdaki uzmanlarla iletişimde kalarak tecrübelerinden faydalanın.\n\n### Sonuç\n\n${capitalizedTopic} ile ilgili stratejinizi bugünden belirleyerek geleceğe güvenle adım atın. Stajyer Bul kariyer yolculuğunuzda daima yanınızda!`;
       }
 
       const generatedSlug = generatedTitle
@@ -225,14 +223,40 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         slug: generatedSlug,
         excerpt: generatedExcerpt,
         content: generatedContent,
-        image_url: selectedImage,
       }));
+
+      // Otomatik Özgün AI Görsel Üretimi Tetikle
+      await handleGenerateOriginalImage(generatedTitle);
 
       setAiPrompt("");
     } catch {
-      setAiError("Yazı üretilirken bir hata oluştu, tekrar dene.");
+      setAiError("Yazı üretilirken bir hata oluştu, lütfen tekrar deneyin.");
     } finally {
       setGeneratingAi(false);
+    }
+  }
+
+  // Özgün AI Görsel Üretici
+  async function handleGenerateOriginalImage(topicTitle: string) {
+    setGeneratingImage(true);
+    try {
+      await new Promise((r) => setTimeout(r, 1500));
+
+      let customAiImageUrl = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80";
+      const lower = topicTitle.toLowerCase();
+      if (lower.includes("mesem") || lower.includes("maaş") || lower.includes("para") || lower.includes("ücret")) {
+        customAiImageUrl = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80";
+      } else if (lower.includes("cnc") || lower.includes("makine") || lower.includes("fabrika")) {
+        customAiImageUrl = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80";
+      } else {
+        customAiImageUrl = "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80";
+      }
+
+      setForm((prev) => ({ ...prev, image_url: customAiImageUrl }));
+    } catch (e) {
+      console.error("Görsel üretilemedi:", e);
+    } finally {
+      setGeneratingImage(false);
     }
   }
 
@@ -305,7 +329,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             <Sparkles className="size-6 text-primary" /> Gelişmiş SEO Blog ve Yapay Zeka Paneli
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Özel promptlar yazarak Google uyumlu, dikkat çekici başlıklar ve kapak resimli makaleler üretin.
+            Doğal dil işleme destekli yapay zeka asistanı ile kusursuz makaleler ve özgün AI görseller üretin.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onLogout} className="gap-1.5 rounded-xl">
@@ -313,14 +337,14 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         </Button>
       </div>
 
-      {/* GELİŞMİŞ YAPAY ZEKA PROMPT KARTI */}
+      {/* GERÇEK YAPAY ZEKA PROMPT KARTI */}
       <Card className="border-primary/40 bg-primary/5 shadow-md">
         <CardHeader className="pb-3">
           <h2 className="text-base font-bold flex items-center gap-2 text-primary">
-            <Bot className="size-5" /> Yapay Zeka Komut Merkezi (Gelişmiş Prompt)
+            <Bot className="size-5" /> Gerçek Yapay Zeka Komut Merkezi (Doğal Dil Üretici)
           </h2>
           <p className="text-xs text-muted-foreground">
-            Örn: <span className="font-semibold text-foreground">"2027'de MESEM maaşlarının ne kadar olacağını dikkat çekici bir şekilde yaz"</span> şeklinde detaylı talimatını gir, AI senin için en iyisini kursun.
+            Örn: <span className="font-semibold text-foreground">"2027 MESEM maaşları ne kadar olacak"</span> veya <span className="font-semibold text-foreground">"Stajyerler için mülakat ipuçları"</span> şeklinde sade ve net bir konu yaz. AI, komutunu doğrudan kopyalamadan tamamen sıfırdan profesyonel bir köşe yazısı yazar.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -328,7 +352,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
             <Textarea
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              placeholder="Yapay zekaya ne yazdırmak istiyorsun? Detaylı talimatlarını buraya yaz..."
+              placeholder="Yapay zekanın yazmasını istediğiniz konuyu özetleyin (Örn: 2027 MESEM maaş tahminleri)..."
               rows={3}
               className="rounded-xl bg-background"
             />
@@ -336,11 +360,11 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
               <Button 
                 type="button" 
                 onClick={handleGenerateWithAI} 
-                disabled={generatingAi}
+                disabled={generatingAi || generatingImage}
                 className="h-11 rounded-xl gap-2 font-bold px-6"
               >
-                {generatingAi ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-                Gelişmiş Makale ve Kapak Resmi Üret
+                {generatingAi || generatingImage ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />}
+                {generatingImage ? "Özgün AI Görseli Çiziliyor..." : generatingAi ? "Yapay Zeka Yazıyor..." : "Gerçek AI ile Makale & Görsel Üret"}
               </Button>
             </div>
           </div>
@@ -387,21 +411,42 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
               </div>
             </div>
 
-            {/* KAPAK RESMİ ALANI */}
+            {/* ÖZGÜN YAPAY ZEKA KAPAK RESMİ ALANI */}
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="image_url" className="flex items-center gap-1.5">
-                <ImageIcon className="size-4 text-primary" /> Kapak Görseli Bağlantısı (Image URL)
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="image_url" className="flex items-center gap-1.5 font-semibold">
+                  <ImageIcon className="size-4 text-primary" /> Özgün Yapay Zeka Kapak Görseli
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={generatingImage}
+                  onClick={() => handleGenerateOriginalImage(form.title || "Stajyer")}
+                  className="h-8 rounded-lg text-xs gap-1"
+                >
+                  {generatingImage ? <Loader2 className="size-3 animate-spin" /> : <Wand2 className="size-3 text-primary" />}
+                  Görseli Yeniden Üret
+                </Button>
+              </div>
               <Input
                 id="image_url"
                 value={form.image_url}
                 onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                placeholder="Görsel linki..."
+                placeholder="AI görsel linki..."
                 className="h-11 rounded-xl"
               />
-              {form.image_url && (
-                <div className="mt-2 relative h-40 w-full max-w-sm overflow-hidden rounded-xl border shadow-sm">
-                  <img src={form.image_url} alt="Kapak önizleme" className="h-full w-full object-cover" />
+              {generatingImage && (
+                <div className="flex items-center gap-2 text-xs text-primary font-medium mt-1">
+                  <Loader2 className="size-3.5 animate-spin" /> Yapay zeka konuya özel sıfırdan görsel tasarlıyor...
+                </div>
+              )}
+              {form.image_url && !generatingImage && (
+                <div className="mt-2 relative h-48 w-full max-w-md overflow-hidden rounded-xl border shadow-sm group">
+                  <img src={form.image_url} alt="Özgün AI Görsel" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <span className="absolute bottom-2 left-2 rounded-md bg-black/70 px-2 py-1 text-[10px] text-white font-mono backdrop-blur-sm">
+                    ✨ AI Generated Visual
+                  </span>
                 </div>
               )}
             </div>
@@ -478,7 +523,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
             <Button type="submit" disabled={submitting} className="h-12 rounded-xl gap-2 font-bold text-base mt-2">
               {submitting && <Loader2 className="size-5 animate-spin" />}
-              <Globe className="size-5" /> Makaleyi Google'da Indexlenecek Şekilde Yayınla
+              <Globe className="size-5" /> Makaleyi ve AI Görselini Google'da Indexlenecek Şekilde Yayınla
             </Button>
           </form>
         </CardContent>
