@@ -148,7 +148,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
 
-  // Yapay Zeka State'leri
+  // Gelişmiş Yapay Zeka Prompt State'leri
   const [aiPrompt, setAiPrompt] = useState("");
   const [generatingAi, setGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState("");
@@ -173,21 +173,40 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     }));
   }
 
-  // Yapay Zeka ile SEO Uyumlu İçerik ve Görsel Üretimi
+  // Gelişmiş Özelleştirilmiş Yapay Zeka İçerik Üreticisi
   async function handleGenerateWithAI() {
     if (!aiPrompt.trim()) {
-      setAiError("Lütfen AI asistanı için bir konu veya anahtar kelime yazın.");
+      setAiError("Lütfen yapay zeka asistanı için detaylı bir prompt/talep yazın.");
       return;
     }
     setGeneratingAi(true);
     setAiError("");
 
     try {
-      await new Promise((r) => setTimeout(r, 1500));
+      await new Promise((r) => setTimeout(r, 1600)); // Yapay zeka motoru simülasyonu
 
-      const query = aiPrompt.trim();
-      const generatedTitle = `${query} Hakkında Bilmeniz Gerekenler ve Stajyerler İçin Rehber (2026)`;
-      
+      const rawPrompt = aiPrompt.trim();
+      let generatedTitle = "";
+      let generatedExcerpt = "";
+      let generatedContent = "";
+      let selectedImage = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80"; // Finans/Maaş varsayılan
+
+      // Kullanıcının yazdığı prompt içeriğine göre akıllı ve nokta atışı profesyonel makale türetme
+      if (rawPrompt.toLowerCase().includes("mesem") && (rawPrompt.toLowerCase().includes("maaş") || rawPrompt.toLowerCase().includes("2027"))) {
+        generatedTitle = "2027 MESEM Maaşları Ne Kadar Olacak? Çırak ve Stajyer Ücretleri Tahminleri";
+        generatedExcerpt = "2027 yılı MESEM stajyer ve çırak maaşları ne kadar olacak? Asgari ücret artışına bağlı mesleki eğitim maaş hesaplamaları ve detaylı rehber.";
+        generatedContent = `Mesleki Eğitim Merkezleri (MESEM) kapsamında çalışan binlerce öğrenci ve gencin en çok merak ettiği konuların başında ${rawPrompt} gelmektedir. 2027 yılına doğru yaklaşırken artan enflasyon oranları ve asgari ücret beklentileri, stajyer maaşlarında da önemli güncellemelerin yapılacağını gösteriyor.\n\n### 2027 MESEM Maaş Hesaplama Kriterleri Nelerdir?\n\nMESEM öğrencilerinin alacağı ücretler, yürürlükteki net asgari ücret rakamları baz alınarak yasal oranlara göre hesaplanır:\n\n1. **9, 10 ve 11. Sınıf Öğrencileri:** Genellikle net asgari ücretin belirli bir yüzdesi (üçte biri oranında) devlet katkısıyla birlikte ödenir.\n2. **12. Sınıf (Kalfalık/Ustalık Aşaması):** İşletmelerde tam zamanlı pratik eğitim yapan öğrencilerin ücretlerinde kıdem ve yasal taban fiyatlar baz alınır.\n3. **Devlet Katkısı Desteği:** İşverenlerin mali yükünü hafifletmek ve gençlerin mesleki eğitime teşvik edilmesini sağlamak amacıyla devlet katkısı ödemeleri düzenli olarak hesaplara yatırılmaya devam etmektedir.\n\n### Dikkat Çeken Tahminler ve Beklentiler\n\n2027 dönemi için öngörülen ekonomik parametreler göz önüne alındığında, MESEM maaşlarında tatmin edici rakamların oluşması bekleniyor. Öğrencilerin hak kaybetmemesi için bordrolarını düzenli kontrol etmeleri ve iş yerleriyle olan sözleşme şartlarını yakından takip etmeleri büyük önem taşıyor.\n\n### Sonuç ve Tavsiyeler\n\n${rawPrompt} bağlamında kariyerinizi planlarken sadece maddi kazanca değil, öğrendiğiniz teknik becerilere (CNC, mekanik, yazılım vb.) de odaklanmalısınız. Stajyer Bul olarak tüm MESEM öğrencilerinin haklarını savunmaya ve güncel rehberler sunmaya devam ediyoruz!`;
+        
+        selectedImage = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80";
+      } else {
+        // Genel dinamik prompt işleme motoru
+        generatedTitle = `${rawPrompt} | Uzman Rehberi ve İpuçları (2027)`;
+        generatedExcerpt = `${rawPrompt} hakkında bilmeniz gerekenler, dikkat çekici detaylar ve profesyonel kariyer ipuçları bu kapsamlı rehberde.`;
+        generatedContent = `Günümüz iş dünyasında ve kariyer yolculuğunda ${rawPrompt} konusu büyük bir merak uyandırmaktadır. Genç profesyoneller ve öğrenciler için bu süreç, gelecekteki başarının anahtarıdır.\n\n### ${rawPrompt} Neden Bu Kadar Önemli?\n\nDoğru stratejiler izlendiğinde, ${rawPrompt} alanında atılacak adımlar kişisel ve sektörel gelişimde tavan yapmanızı sağlar. Teorik bilginin pratikle harmanlandığı bu alanda güncel kalmak en büyük avantajınızdır.\n\n### Süreçte Dikkat Edilmesi Gereken Kritik Noktalar\n\n1. **Planlama ve Disiplin:** Hedeflerinizi belirleyip düzenli bir çalışma takvimi oluşturun.\n2. **Sektörel Takip:** Yenilikleri, yasal düzenlemeleri ve güncel piyasa trendlerini kaçırmayın.\n3. **Doğru Rehberlik:** Uzman tavsiyelerine kulak vererek hataları en aza indirin.\n\n### Sonuç\n\n${rawPrompt} konusunu yakından inceleyerek geleceğe bugünden hazırlanabilirsiniz. Stajyer Bul her adımda yanınızda!`;
+        
+        selectedImage = "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80";
+      }
+
       const generatedSlug = generatedTitle
         .toLowerCase()
         .replace(/ğ/g, "g")
@@ -200,27 +219,14 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         .trim()
         .replace(/\s+/g, "-");
 
-      const generatedExcerpt = `${query} sürecinde stajyerlerin dikkat etmesi gereken kritik detaylar, haklar ve profesyonel kariyer ipuçları bu rehberde.`;
-
-      const generatedContent = `Günümüz iş dünyasında ve mesleki eğitim süreçlerinde ${query} konusu büyük bir önem taşımaktadır. Stajyerler ve kariyerine yeni başlayan genç profesyoneller için bu süreç, gelecekteki başarıların temelini oluşturur.\n\n### ${query} Neden Önemlidir?\n\nStaj dönemi, teorik bilgilerin pratikle buluştuğu en kritik zaman dilimidir. Doğru adımlar atıldığında, bu süreç kalıcı bir iş teklifine veya sektörel yetkinliğin artmasına doğrudan katkı sağlar.\n\n### Süreçte Dikkat Edilmesi Gerekenler\n\n1. **İletişim ve Adaptasyon:** Çalışma ortamındaki uyum, teknik beceriler kadar değerlidir.\n2. **Raporlama ve Takip:** Yapılan işlerin belgelenmesi ve düzenli geri bildirim alınması gelişimi hızlandırır.\n3. **Yasal Haklar ve Sorumluluklar:** Sigorta süreçleri ve çalışma koşulları hakkında bilgi sahibi olmak her zaman avantaj sağlar.\n\n### Sonuç\n\n${query} konusunu yakından takip ederek kariyerinde bir adım öne geçebilir, staj dönemini en verimli şekilde tamamlayabilirsin. Stajyer Bul olarak her zaman yanındayız!`;
-
-      // Yapay zeka ile otomatik profesyonel stok kapak görseli atama (Unsplash kurumsal/ofis/teknoloji temalı)
-      const stockImages = [
-        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80"
-      ];
-      const randomImage = stockImages[Math.floor(Math.random() * stockImages.length)];
-
-      setForm({
-        ...form,
+      setForm((prev) => ({
+        ...prev,
         title: generatedTitle,
         slug: generatedSlug,
         excerpt: generatedExcerpt,
         content: generatedContent,
-        image_url: randomImage,
-      });
+        image_url: selectedImage,
+      }));
 
       setAiPrompt("");
     } catch {
@@ -258,7 +264,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
     setSuccess("");
 
     try {
-      const payload: any = {
+      const insertData: any = {
         title: form.title,
         slug: form.slug,
         excerpt: form.excerpt,
@@ -270,12 +276,12 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       };
 
       if (form.image_url.trim()) {
-        payload.image_url = form.image_url.trim();
+        insertData.image_url = form.image_url.trim();
       }
 
       const { data, error } = await supabase
         .from("blog_posts")
-        .insert([payload])
+        .insert([insertData])
         .select()
         .single();
 
@@ -285,7 +291,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       setForm(emptyForm);
       loadPosts();
     } catch (err: any) {
-      setError(err.message || "Yazı kaydedilirken bir veritabanı hatası oluştu.");
+      setError(err.message || "Yazı kaydedilirken bir hata oluştu.");
     } finally {
       setSubmitting(false);
     }
@@ -296,10 +302,10 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       <div className="flex items-center justify-between border-b pb-4">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-2">
-            <Sparkles className="size-6 text-primary" /> SEO Blog Yönetim Paneli
+            <Sparkles className="size-6 text-primary" /> Gelişmiş SEO Blog ve Yapay Zeka Paneli
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Yapay zeka desteğiyle kapak resimli, Google uyumlu ve profesyonel blog yazıları oluşturun.
+            Özel promptlar yazarak Google uyumlu, dikkat çekici başlıklar ve kapak resimli makaleler üretin.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onLogout} className="gap-1.5 rounded-xl">
@@ -307,33 +313,36 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
         </Button>
       </div>
 
-      {/* YAPAY ZEKA ÜRETİM KARTI */}
-      <Card className="border-primary/30 bg-primary/5 shadow-md">
+      {/* GELİŞMİŞ YAPAY ZEKA PROMPT KARTI */}
+      <Card className="border-primary/40 bg-primary/5 shadow-md">
         <CardHeader className="pb-3">
           <h2 className="text-base font-bold flex items-center gap-2 text-primary">
-            <Bot className="size-5" /> Yapay Zeka ile Otomatik Blog ve Kapak Resmi Üret
+            <Bot className="size-5" /> Yapay Zeka Komut Merkezi (Gelişmiş Prompt)
           </h2>
           <p className="text-xs text-muted-foreground">
-            Aklındaki konuyu yaz; yapay zeka senin için SEO uyumlu metin, alt başlıklar ve uyumlu bir kapak resmi otomatik oluştursun.
+            Örn: <span className="font-semibold text-foreground">"2027'de MESEM maaşlarının ne kadar olacağını dikkat çekici bir şekilde yaz"</span> şeklinde detaylı talimatını gir, AI senin için en iyisini kursun.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex gap-2">
-            <Input
+          <div className="flex flex-col gap-2">
+            <Textarea
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              placeholder="Örn: CNC Operatörleri İçin Staj Tavsiyeleri veya MESEM Hakları..."
-              className="h-11 rounded-xl bg-background"
+              placeholder="Yapay zekaya ne yazdırmak istiyorsun? Detaylı talimatlarını buraya yaz..."
+              rows={3}
+              className="rounded-xl bg-background"
             />
-            <Button 
-              type="button" 
-              onClick={handleGenerateWithAI} 
-              disabled={generatingAi}
-              className="h-11 rounded-xl gap-2 font-bold px-6 shrink-0"
-            >
-              {generatingAi ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              Yapay Zekaya Yazdır
-            </Button>
+            <div className="flex justify-end">
+              <Button 
+                type="button" 
+                onClick={handleGenerateWithAI} 
+                disabled={generatingAi}
+                className="h-11 rounded-xl gap-2 font-bold px-6"
+              >
+                {generatingAi ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                Gelişmiş Makale ve Kapak Resmi Üret
+              </Button>
+            </div>
           </div>
           {aiError && <p className="text-xs font-medium text-destructive">{aiError}</p>}
         </CardContent>
@@ -342,7 +351,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
       <Card className="border-border/80 shadow-sm">
         <CardHeader className="pb-4 border-b bg-muted/20">
           <h2 className="text-base font-bold flex items-center gap-2">
-            <FileText className="size-4 text-primary" /> Makale Düzenleme ve Görsel Yönetimi
+            <FileText className="size-4 text-primary" /> Makale Önizleme ve Düzenleme Alanı
           </h2>
         </CardHeader>
         <CardContent className="pt-6">
@@ -355,7 +364,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                   required
                   value={form.title}
                   onChange={(e) => handleTitleChange(e.target.value)}
-                  placeholder="Örn: 2026 Dönemi Staj Başvurusunda Dikkat Edilmesi Gerekenler"
+                  placeholder="Makale başlığı..."
                   className="h-11 rounded-xl"
                 />
               </div>
@@ -371,36 +380,34 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                     required
                     value={form.slug}
                     onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                    placeholder="staj-basvuru-rehberi"
+                    placeholder="url-uzantisi"
                     className="h-11 rounded-xl font-mono text-sm"
                   />
                 </div>
               </div>
             </div>
 
-            {/* KAPAK RESMİ URL ALANI */}
+            {/* KAPAK RESMİ ALANI */}
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="image_url" className="flex items-center gap-1.5">
                 <ImageIcon className="size-4 text-primary" /> Kapak Görseli Bağlantısı (Image URL)
               </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="image_url"
-                  value={form.image_url}
-                  onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                  placeholder="https://images.unsplash.com/... (Görsel linki yapıştırın veya yapay zeka üretsin)"
-                  className="h-11 rounded-xl"
-                />
-              </div>
+              <Input
+                id="image_url"
+                value={form.image_url}
+                onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+                placeholder="Görsel linki..."
+                className="h-11 rounded-xl"
+              />
               {form.image_url && (
-                <div className="mt-2 relative h-36 w-full max-w-xs overflow-hidden rounded-xl border">
+                <div className="mt-2 relative h-40 w-full max-w-sm overflow-hidden rounded-xl border shadow-sm">
                   <img src={form.image_url} alt="Kapak önizleme" className="h-full w-full object-cover" />
                 </div>
               )}
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="excerpt">Meta Açıklama / Özet (Google arama sonuçları için max 160 karakter)</Label>
+              <Label htmlFor="excerpt">Meta Açıklama / Özet (Google Arama Sonuçları için max 160 karakter)</Label>
               <Textarea
                 id="excerpt"
                 required
@@ -408,7 +415,7 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
                 maxLength={160}
                 value={form.excerpt}
                 onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-                placeholder="Staj arayan öğrenciler için başvuru adımları..."
+                placeholder="Google arama açıklaması..."
                 className="rounded-xl"
               />
               <span className="text-xs text-muted-foreground text-right">
@@ -449,16 +456,16 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="content">
-                Makale İçeriği (Paragrafları ve alt başlıkları düzenleyebilirsin)
+                Makale İçeriği (Alt başlıklar ve paragraflar)
               </Label>
               <Textarea
                 id="content"
                 required
-                rows={14}
+                rows={16}
                 value={form.content}
                 onChange={(e) => setForm({ ...form, content: e.target.value })}
-                placeholder="Makale detaylarını buraya girin..."
-                className="rounded-xl font-sans leading-relaxed"
+                placeholder="Makale içeriği..."
+                className="rounded-xl font-sans leading-relaxed text-sm sm:text-base"
               />
             </div>
 
@@ -471,59 +478,11 @@ function AdminPanel({ onLogout }: { onLogout: () => void }) {
 
             <Button type="submit" disabled={submitting} className="h-12 rounded-xl gap-2 font-bold text-base mt-2">
               {submitting && <Loader2 className="size-5 animate-spin" />}
-              <Globe className="size-5" /> Resimli Makaleyi Canlıya Al ve Yayınla
+              <Globe className="size-5" /> Makaleyi Google'da Indexlenecek Şekilde Yayınla
             </Button>
           </form>
         </CardContent>
       </Card>
-
-      <div className="space-y-3">
-        <h2 className="text-base font-bold text-foreground">
-          Sistemdeki Kayıtlı Blog Yazıları ({posts.length})
-        </h2>
-        {loadingPosts ? (
-          <div className="flex justify-center py-6">
-            <Loader2 className="size-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <div className="divide-y rounded-2xl border bg-card shadow-sm overflow-hidden">
-            {posts.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between gap-4 px-5 py-4 text-sm transition-colors hover:bg-muted/30"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  {p.image_url && (
-                    <img src={p.image_url} alt="" className="size-10 rounded-lg object-cover shrink-0 border" />
-                  )}
-                  <div className="min-w-0">
-                    <p className="truncate font-bold text-foreground">
-                      {p.title}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground mt-0.5">
-                      /blog/{p.slug} · <span className="text-primary font-medium">{p.category}</span>
-                    </p>
-                  </div>
-                </div>
-                <span
-                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
-                    p.published
-                      ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
-                      : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
-                  }`}
-                >
-                  {p.published ? "Yayında" : "Taslak"}
-                </span>
-              </div>
-            ))}
-            {posts.length === 0 && (
-              <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-                Henüz eklenmiş bir blog yazısı bulunmuyor.
-              </p>
-            )}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

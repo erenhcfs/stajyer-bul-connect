@@ -1,180 +1,238 @@
-import { Fragment } from "react";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, Calendar, Clock, BookOpen } from "lucide-react";
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { Loader2, Calendar, User, ArrowLeft, Share2, Tag, Sparkles } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
-import { AdUnit } from "@/components/AdUnit";
-import {
-  categoryGradient,
-  estimateReadTime,
-  formatPostDate,
-  type BlogPost,
-} from "@/lib/blog-helpers";
-
-const SITE_URL = "https://stajyerbul.com"; // kendi canlı domaninle değiştir
+import { type BlogPost } from "@/lib/blog-helpers";
 
 export const Route = createFileRoute("/blog/$slug")({
   component: BlogDetailPage,
+  head: ({ loaderData }: { loaderData?: BlogPost }) => {
+    // Google SEO ve Arama Motoru Optimizasyonu için Dinamik Head Meta Etiketleri
+    const title = loaderData?.title ? `${loaderData.title} | Stajyer Bul` : "Blog Detayı | Stajyer Bul";
+    const description = loaderData?.excerpt || "Staj ve kariyer rehberi içerikleri.";
+    const image = loaderData?.image_url || "https://stajyerbul.com/og-image.jpg";
+    const url = typeof window !== "undefined" ? window.location.href : "";
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        // Googlebot & OpenGraph (Sosyal Medya & Arama Motoru)
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:image", content: image },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "article" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: image },
+      ],
+      // Google'ın içeriği daha iyi anlaması için Schema.org JSON-LD Yapısal Verisi
+      scripts: loaderData
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BlogPosting",
+                headline: loaderData.title,
+                description: loaderData.excerpt,
+                image: loaderData.image_url,
+                author: {
+                  "@type": "Person",
+                  name: loaderData.author_name || "Stajyer Bul Ekibi",
+                },
+                datePublished: loaderData.created_at,
+              }),
+            },
+          ]
+        : [],
+    };
+  },
   loader: async ({ params }) => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("blog_posts")
       .select("*")
       .eq("slug", params.slug)
-      .eq("published", true)
-      .maybeSingle();
-    if (error) throw error;
-    if (!data) throw notFound();
-
-    const { data: related } = await supabase
-      .from("blog_posts")
-      .select("*")
-      .eq("category", data.category)
-      .eq("published", true)
-      .neq("slug", data.slug)
-      .limit(3);
-
-    return { post: data as BlogPost, related: (related ?? []) as BlogPost[] };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) return {};
-    const { post } = loaderData;
-    const url = `${SITE_URL}/blog/${post.slug}`;
-    return {
-      meta: [
-        { title: `${post.title} | Stajyer Bul Blog` },
-        { name: "description", content: post.excerpt },
-        { property: "og:type", content: "article" },
-        { property: "og:title", content: post.title },
-        { property: "og:description", content: post.excerpt },
-        { property: "og:url", content: url },
-        { property: "article:published_time", content: post.created_at },
-        { property: "article:section", content: post.category },
-        { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:title", content: post.title },
-        { name: "twitter:description", content: post.excerpt },
-      ],
-      links: [{ rel: "canonical", href: url }],
-    };
+      .single();
+    return data as BlogPost | null;
   },
 });
 
 function BlogDetailPage() {
-  const { post, related } = Route.useLoaderData();
-  const url = `${SITE_URL}/blog/${post.slug}`;
-  const paragraphs = post.content.split(/\n{2,}/).filter(Boolean);
-  const midpoint = Math.ceil(paragraphs.length / 2);
+  const { slug } = useParams({ from: "/blog/$slug" });
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: post.title,
-    description: post.excerpt,
-    author: { "@type": "Person", name: post.author_name },
-    datePublished: post.created_at,
-    articleSection: post.category,
-    mainEntityOfPage: url,
-  };
+  useEffect(() => {
+    async function fetchPostAndMore() {
+      setLoading(true);
+      try {
+        // Yazıyı çek
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .select("*")
+          .eq("slug", slug)
+          .single();
+
+        if (error) throw error;
+        setPost(data as BlogPost);
+
+        // Diğer son yazarları/yazıları çek (SEO iç linkleme için)
+        const { data: others } = await supabase
+          .from("blog_posts")
+          .select("*")
+          .neq("slug", slug)
+          .limit(3);
+
+        setRecentPosts((others ?? []) as BlogPost[]);
+      } catch (err) {
+        console.error("Blog yüklenirken hata:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPostAndMore();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="size-8 animate-spin text-primary" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <Navbar />
+        <main className="flex-1 container-x max-w-2xl py-20 text-center">
+          <h1 className="text-2xl font-bold">Yazı Bulunamadı</h1>
+          <p className="text-muted-foreground mt-2 mb-6">Aradığınız blog yazısı silinmiş veya taşınmış olabilir.</p>
+          <Button asChild className="rounded-xl">
+            <Link to="/blog">Blog Anasayfasına Dön</Link>
+          </Button>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+    <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
 
-      <main className="flex-1">
-        {/* Cover */}
-        <div
-          className={`flex h-56 items-center justify-center bg-gradient-to-br ${categoryGradient(
-            post.category,
-          )} sm:h-72`}
-        >
-          <BookOpen className="size-14 text-foreground/20" />
-        </div>
+      <main className="flex-1 py-10">
+        <article className="container-x max-w-3xl">
+          {/* Geri Dön Tuşu */}
+          <div className="mb-6">
+            <Button variant="ghost" size="sm" asChild className="gap-2 rounded-xl text-muted-foreground hover:text-foreground">
+              <Link to="/blog">
+                <ArrowLeft className="size-4" /> Tüm Blog Yazıları
+              </Link>
+            </Button>
+          </div>
 
-        <article className="container-x max-w-3xl py-10 sm:py-14">
-          <Link
-            to="/blog"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" /> Tüm yazılar
-          </Link>
+          {/* Kategori ve Tarih */}
+          <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+              <Tag className="size-3" /> {post.category || "Staj Rehberi"}
+            </span>
+            <span className="flex items-center gap-1 text-xs">
+              <Calendar className="size-3.5" /> {new Date(post.created_at).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}
+            </span>
+          </div>
 
-          <Badge variant="secondary" className="mt-6 w-fit">
-            {post.category}
-          </Badge>
-
-          <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+          {/* Makale Başlığı (H1 - Google SEO için hayati önem taşır) */}
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground leading-tight mb-6">
             {post.title}
           </h1>
 
-          <div className="mt-5 flex items-center gap-3">
-            <Avatar className="size-9">
-              <AvatarFallback className="text-xs">
-                {post.author_initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-sm">
-              <p className="font-medium text-foreground">
-                {post.author_name}
-              </p>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="size-3" />
-                  {formatPostDate(post.created_at)}
-                </span>
-                <span>·</span>
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="size-3" />
-                  {estimateReadTime(post.content)}
-                </span>
+          {/* Yazar Bilgisi */}
+          <div className="flex items-center justify-between border-y py-4 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground font-bold text-sm">
+                {post.author_initials || "SB"}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">{post.author_name || "Stajyer Bul Ekibi"}</p>
+                <p className="text-xs text-muted-foreground">Uzman Kariyer Danışmanı</p>
               </div>
             </div>
+            <Button variant="outline" size="sm" className="rounded-xl gap-2" onClick={() => {
+              if (navigator.share) {
+                navigator.share({ title: post.title, url: window.location.href });
+              } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Bağlantı kopyalandı!");
+              }
+            }}>
+              <Share2 className="size-4" /> Paylaş
+            </Button>
           </div>
 
-          <div className="mt-8 space-y-5 text-base leading-relaxed text-foreground/90">
-            {paragraphs.map((paragraph, index) => (
-              <Fragment key={index}>
-                <p>{paragraph}</p>
-                {index === midpoint - 1 && paragraphs.length > 2 && (
-                  <AdUnit slot="0000000001" className="my-6 min-h-[120px]" />
-                )}
-              </Fragment>
-            ))}
+          {/* Kapak Görseli */}
+          {post.image_url && (
+            <div className="mb-8 overflow-hidden rounded-2xl border shadow-md aspect-video">
+              <img src={post.image_url} alt={post.title} className="h-full w-full object-cover" />
+            </div>
+          )}
+
+          {/* GOOGLE ADS / ADSENSE ALANI (Makale Üstü Reklam Slotu) */}
+          <div className="my-6 rounded-2xl border border-dashed bg-muted/40 p-4 text-center text-xs text-muted-foreground">
+            <span>[ Google Ads / AdSense Reklam Alanı ]</span>
           </div>
 
-          <AdUnit slot="0000000002" className="mt-10 min-h-[120px]" />
-        </article>
+          {/* Makale İçeriği (Paragraflar halinde mükemmel okunabilirlik) */}
+          <div className="prose prose-slate max-w-none text-foreground/90 leading-relaxed space-y-6 text-base sm:text-lg whitespace-pre-line font-normal">
+            {post.content}
+          </div>
 
-        {/* Related posts */}
-        {related.length > 0 && (
-          <section className="border-t bg-muted/30">
-            <div className="container-x max-w-3xl py-12">
-              <h2 className="text-lg font-bold tracking-tight text-foreground">
-                Bu kategoride diğer yazılar
-              </h2>
-              <div className="mt-6 grid gap-4 sm:grid-cols-3">
-                {related.map((r) => (
-                  <Link key={r.id} to="/blog/$slug" params={{ slug: r.slug }}>
-                    <Card className="h-full p-4 transition-shadow hover:shadow-md">
-                      <p className="line-clamp-3 text-sm font-semibold text-foreground">
-                        {r.title}
-                      </p>
-                      <p className="mt-3 text-xs text-muted-foreground">
-                        {estimateReadTime(r.content)}
-                      </p>
-                    </Card>
+          {/* GOOGLE ADS / ADSENSE ALANI (Makale Altı Reklam Slotu) */}
+          <div className="my-10 rounded-2xl border border-dashed bg-muted/40 p-4 text-center text-xs text-muted-foreground">
+            <span>[ Google Ads / AdSense Reklam Alanı ]</span>
+          </div>
+
+          {/* İlgili / Diğer Yazılar (SEO İç Linkleme Gücü) */}
+          {recentPosts.length > 0 && (
+            <div className="mt-16 border-t pt-10">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <Sparkles className="size-5 text-primary" /> Diğer Faydalı Yazılar
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {recentPosts.map((item) => (
+                  <Link
+                    key={item.id}
+                    to="/blog/$slug"
+                    params={{ slug: item.slug }}
+                    className="group flex flex-col overflow-hidden rounded-2xl border bg-card p-4 transition-all hover:shadow-md"
+                  >
+                    {item.image_url && (
+                      <div className="mb-3 aspect-video overflow-hidden rounded-xl bg-muted">
+                        <img src={item.image_url} alt={item.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      </div>
+                    )}
+                    <h4 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                      {item.title}
+                    </h4>
                   </Link>
                 ))}
               </div>
             </div>
-          </section>
-        )}
+          )}
+        </article>
       </main>
 
       <Footer />
