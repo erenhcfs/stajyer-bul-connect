@@ -1,4 +1,4 @@
-import { handleAdminRequest } from "./admin.server";
+import { handleAdminRequest } from "./admin.server.ts";
 
 // Vercel's current Node runtime invokes Web-standard fetch handlers directly.
 // Keeping Request/Response untouched also preserves cookies and streaming safely.
