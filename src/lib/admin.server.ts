@@ -133,7 +133,10 @@ export async function handleAdminRequest(request: Request): Promise<Response | n
       const expectedPassword = process.env["ADMIN_PASSWORD"];
       if (!expectedPassword || !process.env["ADMIN_SESSION_SECRET"])
         return json({ error: "Yönetici giriş ayarları eksik." }, 503);
-      if (!secureEqual(username, expectedUsername) || !secureEqual(password, expectedPassword))
+      if (
+        (username !== undefined && !secureEqual(username, expectedUsername)) ||
+        !secureEqual(password, expectedPassword)
+      )
         return json({ error: "Kullanıcı adı veya şifre hatalı." }, 401);
       const payload = String(Date.now() + 12 * 3600_000);
       return json({ ok: true }, 200, {

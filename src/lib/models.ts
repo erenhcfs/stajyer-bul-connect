@@ -33,5 +33,40 @@ export type JobListing = {
   department: string | null;
   description: string | null;
   requirements: string | null;
+  status?: "active" | "closed";
   created_at: string;
+};
+
+export type JobApplication = {
+  id: string;
+  listing_id: string;
+  listing_title: string;
+  candidate_id: string;
+  candidate_name: string | null;
+  candidate_email: string | null;
+  candidate_phone: string | null;
+  candidate_school: string | null;
+  candidate_department: string | null;
+  candidate_skills: string | null;
+  status: "pending" | "reviewing" | "accepted" | "rejected";
+  cover_letter: string | null;
+  created_at: string;
+};
+
+export type InternshipOffer = {
+  id: string;
+  employer_id: string;
+  company_name: string | null;
+  employer_email: string | null;
+  employer_phone: string | null;
+  message: string | null;
+  status: "pending" | "accepted" | "rejected";
+  created_at: string;
+};
+
+export type CandidateApplication = {
+  id: string;
+  status: "pending" | "reviewing" | "accepted" | "rejected";
+  created_at: string;
+  job_listings: { title: string; company_name: string | null } | null;
 };

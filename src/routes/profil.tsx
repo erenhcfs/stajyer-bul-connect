@@ -4,12 +4,14 @@ import { supabase } from "@/lib/supabase";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { User, Save, CheckCircle2, Briefcase, Camera } from "lucide-react";
+import type { CandidateApplication, InternshipOffer } from "@/lib/models";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
     meta: [
       { title: "Profil Düzenle — StajyerBul" },
       { name: "description", content: "Kullanıcı profil bilgilerinizi güncelleyin." },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: ProfilPage,
@@ -73,6 +75,8 @@ function ProfilPage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isLookingForInternship, setIsLookingForInternship] = useState(false);
+  const [offers, setOffers] = useState<InternshipOffer[]>([]);
+  const [applications, setApplications] = useState<CandidateApplication[]>([]);
 
   // İşveren Form Alanları
   const [companyName, setCompanyName] = useState("");
@@ -122,12 +126,35 @@ function ProfilPage() {
         setCompanyName(data.company_name || "");
         setSector(data.sector || "");
         setTaxNumber(data.tax_number || "");
+        if (data.role !== "isveren") await Promise.all([fetchOffers(), fetchApplications()]);
       }
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "Profil yüklenemedi.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchOffers = async () => {
+    const { data, error } = await supabase.rpc("get_my_offers");
+    if (!error) setOffers((data || []) as InternshipOffer[]);
+  };
+
+  const fetchApplications = async () => {
+    const { data, error } = await supabase
+      .from("job_applications")
+      .select("id,status,created_at,job_listings(title,company_name)")
+      .order("created_at", { ascending: false });
+    if (!error) setApplications((data || []) as unknown as CandidateApplication[]);
+  };
+
+  const updateOffer = async (id: string, status: "accepted" | "rejected") => {
+    const { error } = await supabase.from("internship_offers").update({ status }).eq("id", id);
+    if (error) {
+      setMessage("Teklif güncellenemedi: " + error.message);
+      return;
+    }
+    setOffers((items) => items.map((offer) => (offer.id === id ? { ...offer, status } : offer)));
   };
 
   // Profil Resmi Yükleme Fonksiyonu
@@ -239,6 +266,102 @@ function ProfilPage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
       <main className="flex-1 container-x py-10 max-w-3xl mx-auto space-y-8">
+        {userRole !== "isveren" && offers.length > 0 && (
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="text-xl font-bold">Gelen Staj Teklifleri ({offers.length})</h2>
+            <div className="mt-4 space-y-3">
+              {offers.map((offer) => (
+                <article key={offer.id} className="rounded-xl border border-border p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-semibold">{offer.company_name || "İşletme"}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {offer.message || "Sizinle staj fırsatı için görüşmek istiyor."}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold">
+                      {offer.status === "pending"
+                        ? "Yeni teklif"
+                        : offer.status === "accepted"
+                          ? "Kabul edildi"
+                          : "Reddedildi"}
+                    </span>
+                  </div>
+                  {offer.status === "pending" && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => updateOffer(offer.id, "accepted")}
+                      >
+                        Kabul Et
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={() => updateOffer(offer.id, "rejected")}
+                      >
+                        Reddet
+                      </button>
+                    </div>
+                  )}
+                  {offer.status === "accepted" && (
+                    <div className="mt-3 flex flex-wrap gap-3 text-sm">
+                      {offer.employer_email && (
+                        <a
+                          className="text-primary hover:underline"
+                          href={`mailto:${offer.employer_email}`}
+                        >
+                          E-posta gönder
+                        </a>
+                      )}
+                      {offer.employer_phone && (
+                        <a
+                          className="text-primary hover:underline"
+                          href={`tel:${offer.employer_phone}`}
+                        >
+                          Telefonla ara
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+        {userRole !== "isveren" && applications.length > 0 && (
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="text-xl font-bold">Başvurularım ({applications.length})</h2>
+            <div className="mt-4 space-y-3">
+              {applications.map((application) => (
+                <article
+                  key={application.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4"
+                >
+                  <div>
+                    <h3 className="font-semibold">
+                      {application.job_listings?.title || "Staj ilanı"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {application.job_listings?.company_name || "İşletme"} ·{" "}
+                      {new Date(application.created_at).toLocaleDateString("tr-TR")}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold">
+                    {application.status === "pending"
+                      ? "Gönderildi"
+                      : application.status === "reviewing"
+                        ? "İnceleniyor"
+                        : application.status === "accepted"
+                          ? "Kabul edildi"
+                          : "Olumsuz"}
+                  </span>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
         <div className="border-b border-border pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold flex items-center gap-2">

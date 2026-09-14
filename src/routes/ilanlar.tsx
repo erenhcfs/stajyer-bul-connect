@@ -43,6 +43,7 @@ function IlanlarPage() {
   const [creating, setCreating] = useState(false);
   const [applying, setApplying] = useState(false);
   const [applicationMessage, setApplicationMessage] = useState("");
+  const [coverLetter, setCoverLetter] = useState("");
   const [listings, setListings] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
   const searchQuery = search.q || "";
@@ -175,21 +176,22 @@ function IlanlarPage() {
       return;
     }
     if (!selectedListing || applying) return;
+    if (!userProfile || !["stajyer", "ogrenci"].includes(userProfile.role)) {
+      setApplicationMessage("Başvuru göndermek için öğrenci profili oluşturmalısınız.");
+      return;
+    }
     setApplying(true);
     setApplicationMessage("");
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("id", selectedListing.employer_id)
-        .maybeSingle();
+      const { error } = await supabase.from("job_applications").insert({
+        listing_id: selectedListing.id,
+        candidate_id: user.id,
+        cover_letter: coverLetter.trim() || null,
+      });
+      if (error?.code === "23505") throw new Error("Bu ilana daha önce başvurdunuz.");
       if (error) throw error;
-      if (!data?.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
-        throw new Error("Firma iletişim adresini paylaşmamış. Şu anda başvuru gönderilemiyor.");
-      window.location.href = `mailto:${encodeURIComponent(data.email)}?subject=${encodeURIComponent(`${selectedListing.title} - Staj başvurusu`)}`;
-      setApplicationMessage(
-        "E-posta uygulamanızda başvurunuzu yazıp gönderin. Bu sayfadan otomatik başvuru gönderilmedi.",
-      );
+      setApplicationMessage("Başvurunuz işletmeye iletildi.");
+      setCoverLetter("");
     } catch (error) {
       setApplicationMessage(error instanceof Error ? error.message : "İletişim bilgisi alınamadı.");
     } finally {
@@ -390,8 +392,20 @@ function IlanlarPage() {
               </div>
 
               <div className="mt-8 pt-4 border-t border-border flex gap-3">
+                <label className="block flex-1 text-sm">
+                  <span className="mb-1.5 block font-medium">Kısa ön yazı (isteğe bağlı)</span>
+                  <textarea
+                    value={coverLetter}
+                    onChange={(event) => setCoverLetter(event.target.value.slice(0, 1000))}
+                    rows={3}
+                    placeholder="Kendinizi ve bu ilanla neden ilgilendiğinizi kısaca anlatın."
+                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5"
+                  />
+                </label>
+              </div>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
                 {applicationMessage && (
-                  <p role="status" className="text-sm">
+                  <p role="status" className="flex-1 text-sm">
                     {applicationMessage}
                   </p>
                 )}
@@ -400,7 +414,7 @@ function IlanlarPage() {
                   disabled={applying}
                   className="flex-1 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90"
                 >
-                  E-posta ile Başvur
+                  {applying ? "Gönderiliyor..." : "Başvuruyu Gönder"}
                 </button>
                 <button
                   onClick={() => setSelectedListing(null)}

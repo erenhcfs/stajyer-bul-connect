@@ -15,6 +15,8 @@ export async function sitemapResponse() {
     "/stajyer-bul",
     "/hakkimizda",
     "/nasil-calisir",
+    "/gizlilik",
+    "/kullanim-kosullari",
   ].map((path) => ({ loc: `${SITE_URL}${path}` }));
   const url = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"];
   const key = process.env["VITE_SUPABASE_ANON_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];

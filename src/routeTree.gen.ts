@@ -13,13 +13,16 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BlogYonetRouteImport } from './routes/blog-yonet'
 import { Route as GirisRouteImport } from './routes/giris'
+import { Route as GizlilikRouteImport } from './routes/gizlilik'
 import { Route as HakkimizdaRouteImport } from './routes/hakkimizda'
 import { Route as IlanlarRouteImport } from './routes/ilanlar'
 import { Route as IsletmePaneliRouteImport } from './routes/isletme-paneli'
 import { Route as IsverenlerRouteImport } from './routes/isverenler'
 import { Route as KayitRouteImport } from './routes/kayit'
+import { Route as KullanimKosullariRouteImport } from './routes/kullanim-kosullari'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as ProfilRouteImport } from './routes/profil'
+import { Route as SifreYenileRouteImport } from './routes/sifre-yenile'
 import { Route as StajyerBulRouteImport } from './routes/stajyer-bul'
 import { Route as YonetimRouteImport } from './routes/yonetim'
 import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
@@ -42,6 +45,11 @@ const BlogYonetRoute = BlogYonetRouteImport.update({
 const GirisRoute = GirisRouteImport.update({
   id: '/giris',
   path: '/giris',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GizlilikRoute = GizlilikRouteImport.update({
+  id: '/gizlilik',
+  path: '/gizlilik',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HakkimizdaRoute = HakkimizdaRouteImport.update({
@@ -69,6 +77,11 @@ const KayitRoute = KayitRouteImport.update({
   path: '/kayit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KullanimKosullariRoute = KullanimKosullariRouteImport.update({
+  id: '/kullanim-kosullari',
+  path: '/kullanim-kosullari',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NasilCalisirRoute = NasilCalisirRouteImport.update({
   id: '/nasil-calisir',
   path: '/nasil-calisir',
@@ -77,6 +90,11 @@ const NasilCalisirRoute = NasilCalisirRouteImport.update({
 const ProfilRoute = ProfilRouteImport.update({
   id: '/profil',
   path: '/profil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SifreYenileRoute = SifreYenileRouteImport.update({
+  id: '/sifre-yenile',
+  path: '/sifre-yenile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StajyerBulRoute = StajyerBulRouteImport.update({
@@ -100,13 +118,16 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRoute
   '/blog-yonet': typeof BlogYonetRoute
   '/giris': typeof GirisRoute
+  '/gizlilik': typeof GizlilikRoute
   '/hakkimizda': typeof HakkimizdaRoute
   '/ilanlar': typeof IlanlarRoute
   '/isletme-paneli': typeof IsletmePaneliRoute
   '/isverenler': typeof IsverenlerRoute
   '/kayit': typeof KayitRoute
+  '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/profil': typeof ProfilRoute
+  '/sifre-yenile': typeof SifreYenileRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -116,13 +137,16 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogRoute
   '/blog-yonet': typeof BlogYonetRoute
   '/giris': typeof GirisRoute
+  '/gizlilik': typeof GizlilikRoute
   '/hakkimizda': typeof HakkimizdaRoute
   '/ilanlar': typeof IlanlarRoute
   '/isletme-paneli': typeof IsletmePaneliRoute
   '/isverenler': typeof IsverenlerRoute
   '/kayit': typeof KayitRoute
+  '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/profil': typeof ProfilRoute
+  '/sifre-yenile': typeof SifreYenileRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -133,13 +157,16 @@ export interface FileRoutesById {
   '/blog': typeof BlogRoute
   '/blog-yonet': typeof BlogYonetRoute
   '/giris': typeof GirisRoute
+  '/gizlilik': typeof GizlilikRoute
   '/hakkimizda': typeof HakkimizdaRoute
   '/ilanlar': typeof IlanlarRoute
   '/isletme-paneli': typeof IsletmePaneliRoute
   '/isverenler': typeof IsverenlerRoute
   '/kayit': typeof KayitRoute
+  '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/profil': typeof ProfilRoute
+  '/sifre-yenile': typeof SifreYenileRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
   '/blog_/$slug': typeof BlogSlugRoute
@@ -151,13 +178,16 @@ export interface FileRouteTypes {
     | '/blog'
     | '/blog-yonet'
     | '/giris'
+    | '/gizlilik'
     | '/hakkimizda'
     | '/ilanlar'
     | '/isletme-paneli'
     | '/isverenler'
     | '/kayit'
+    | '/kullanim-kosullari'
     | '/nasil-calisir'
     | '/profil'
+    | '/sifre-yenile'
     | '/stajyer-bul'
     | '/yonetim'
     | '/blog/$slug'
@@ -167,13 +197,16 @@ export interface FileRouteTypes {
     | '/blog'
     | '/blog-yonet'
     | '/giris'
+    | '/gizlilik'
     | '/hakkimizda'
     | '/ilanlar'
     | '/isletme-paneli'
     | '/isverenler'
     | '/kayit'
+    | '/kullanim-kosullari'
     | '/nasil-calisir'
     | '/profil'
+    | '/sifre-yenile'
     | '/stajyer-bul'
     | '/yonetim'
     | '/blog/$slug'
@@ -183,13 +216,16 @@ export interface FileRouteTypes {
     | '/blog'
     | '/blog-yonet'
     | '/giris'
+    | '/gizlilik'
     | '/hakkimizda'
     | '/ilanlar'
     | '/isletme-paneli'
     | '/isverenler'
     | '/kayit'
+    | '/kullanim-kosullari'
     | '/nasil-calisir'
     | '/profil'
+    | '/sifre-yenile'
     | '/stajyer-bul'
     | '/yonetim'
     | '/blog_/$slug'
@@ -200,13 +236,16 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRoute
   BlogYonetRoute: typeof BlogYonetRoute
   GirisRoute: typeof GirisRoute
+  GizlilikRoute: typeof GizlilikRoute
   HakkimizdaRoute: typeof HakkimizdaRoute
   IlanlarRoute: typeof IlanlarRoute
   IsletmePaneliRoute: typeof IsletmePaneliRoute
   IsverenlerRoute: typeof IsverenlerRoute
   KayitRoute: typeof KayitRoute
+  KullanimKosullariRoute: typeof KullanimKosullariRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
   ProfilRoute: typeof ProfilRoute
+  SifreYenileRoute: typeof SifreYenileRoute
   StajyerBulRoute: typeof StajyerBulRoute
   YonetimRoute: typeof YonetimRoute
   BlogSlugRoute: typeof BlogSlugRoute
@@ -240,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/giris'
       fullPath: '/giris'
       preLoaderRoute: typeof GirisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gizlilik': {
+      id: '/gizlilik'
+      path: '/gizlilik'
+      fullPath: '/gizlilik'
+      preLoaderRoute: typeof GizlilikRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hakkimizda': {
@@ -277,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KayitRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kullanim-kosullari': {
+      id: '/kullanim-kosullari'
+      path: '/kullanim-kosullari'
+      fullPath: '/kullanim-kosullari'
+      preLoaderRoute: typeof KullanimKosullariRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/nasil-calisir': {
       id: '/nasil-calisir'
       path: '/nasil-calisir'
@@ -289,6 +342,13 @@ declare module '@tanstack/react-router' {
       path: '/profil'
       fullPath: '/profil'
       preLoaderRoute: typeof ProfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sifre-yenile': {
+      id: '/sifre-yenile'
+      path: '/sifre-yenile'
+      fullPath: '/sifre-yenile'
+      preLoaderRoute: typeof SifreYenileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/stajyer-bul': {
@@ -320,13 +380,16 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRoute,
   BlogYonetRoute: BlogYonetRoute,
   GirisRoute: GirisRoute,
+  GizlilikRoute: GizlilikRoute,
   HakkimizdaRoute: HakkimizdaRoute,
   IlanlarRoute: IlanlarRoute,
   IsletmePaneliRoute: IsletmePaneliRoute,
   IsverenlerRoute: IsverenlerRoute,
   KayitRoute: KayitRoute,
+  KullanimKosullariRoute: KullanimKosullariRoute,
   NasilCalisirRoute: NasilCalisirRoute,
   ProfilRoute: ProfilRoute,
+  SifreYenileRoute: SifreYenileRoute,
   StajyerBulRoute: StajyerBulRoute,
   YonetimRoute: YonetimRoute,
   BlogSlugRoute: BlogSlugRoute,

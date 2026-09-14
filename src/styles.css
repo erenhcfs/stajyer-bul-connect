@@ -53,6 +53,39 @@
   }
 }
 
+.legal-content {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--card);
+  padding: clamp(1.5rem, 4vw, 3rem);
+  box-shadow: var(--shadow-soft);
+}
+
+.legal-content h1 {
+  font-size: clamp(1.875rem, 4vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.legal-content h2 {
+  margin-top: 2rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.legal-content p {
+  margin-top: 0.75rem;
+  line-height: 1.8;
+  color: var(--muted-foreground);
+}
+
+.legal-content a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 :root {
   --radius: 0.875rem;
   /* #FFFFFF */
@@ -199,14 +232,27 @@
 
 @utility hero-grid {
   background-image:
-    linear-gradient(to right, color-mix(in oklch, var(--color-border) 60%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklch, var(--color-border) 60%, transparent) 1px, transparent 1px);
+    linear-gradient(
+      to right,
+      color-mix(in oklch, var(--color-border) 60%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklch, var(--color-border) 60%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 30%, transparent 100%);
 }
 
 @utility text-gradient {
-  background: linear-gradient(120deg, var(--color-primary-dark), var(--color-primary) 55%, oklch(0.7 0.16 240));
+  background: linear-gradient(
+    120deg,
+    var(--color-primary-dark),
+    var(--color-primary) 55%,
+    oklch(0.7 0.16 240)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

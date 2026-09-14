@@ -144,7 +144,7 @@ function RegisterPage() {
                 <label className="text-sm font-medium">Şifre</label>
                 <input
                   type="password"
-                  minLength={6}
+                  minLength={8}
                   autoComplete="new-password"
                   required
                   value={password}

@@ -21,6 +21,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -34,6 +35,26 @@ function LoginPage() {
       await navigate({ to: "/profil" });
     } catch (error) {
       setError(error instanceof Error ? error.message : "İşlem tamamlanamadı.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handlePasswordReset = async () => {
+    setError(null);
+    setInfo(null);
+    if (!email.trim()) {
+      setError("Şifre sıfırlama bağlantısı için e-posta adresinizi girin.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/sifre-yenile`,
+      });
+      if (error) throw error;
+      setInfo("Şifre yenileme bağlantısı e-posta adresinize gönderildi.");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Bağlantı gönderilemedi.");
     } finally {
       setLoading(false);
     }
@@ -69,6 +90,9 @@ function LoginPage() {
 
           {error && (
             <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+          )}
+          {info && (
+            <div className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-700">{info}</div>
           )}
 
           {/* Sosyal Medya Butonları */}
@@ -131,7 +155,16 @@ function LoginPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Şifre</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Şifre</label>
+                <button
+                  type="button"
+                  onClick={handlePasswordReset}
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Şifremi unuttum
+                </button>
+              </div>
               <input
                 type="password"
                 required

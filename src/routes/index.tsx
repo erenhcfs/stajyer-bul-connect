@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -18,6 +19,8 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { supabase, supabaseConfigured } from "@/lib/supabase";
+import type { Profile } from "@/lib/models";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -77,6 +80,7 @@ export const Route = createFileRoute("/")({
         content: "https://stajyerbul.com.tr/og-image.jpg",
       },
     ],
+    links: [{ rel: "canonical", href: "https://stajyerbul.com.tr/" }],
   }),
   component: Index,
 });
@@ -117,35 +121,16 @@ const steps = [
   },
 ];
 
-const demoCandidates = [
-  {
-    name: "Elif K.",
-    field: "Yazılım",
-    city: "İstanbul",
-    school: "İTÜ · Bilgisayar Müh.",
-    skills: ["React", "TypeScript", "SQL"],
-    pct: 92,
-  },
-  {
-    name: "Mert A.",
-    field: "CNC / Makine",
-    city: "Bursa",
-    school: "Uludağ Üni. · Makine",
-    skills: ["SolidWorks", "CNC", "AutoCAD"],
-    pct: 85,
-  },
-  {
-    name: "Zeynep D.",
-    field: "Grafik Tasarım",
-    city: "İzmir",
-    school: "DEÜ · Görsel İletişim",
-    skills: ["Figma", "Illustrator", "Motion"],
-    pct: 78,
-  },
-];
-
 function Index() {
   const navigate = useNavigate();
+  const [featuredCandidates, setFeaturedCandidates] = useState<Profile[]>([]);
+
+  useEffect(() => {
+    if (!supabaseConfigured) return;
+    supabase
+      .rpc("list_public_candidates", { limit_count: 3 })
+      .then(({ data }) => setFeaturedCandidates((data || []) as Profile[]));
+  }, []);
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -284,66 +269,85 @@ function Index() {
               </Link>
             </div>
 
-            <div className="mt-10 grid gap-5 md:grid-cols-3">
-              {demoCandidates.map((c) => (
-                <article key={c.name} className="card-soft card-hover relative p-5">
-                  <span className="absolute top-4 right-4 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Örnek
-                  </span>
+            {featuredCandidates.length === 0 ? (
+              <div className="card-soft mt-10 p-8 text-center text-sm text-muted-foreground">
+                Aktif adaylar burada gösterilecek. İlk aday olmak için profilini tamamlayabilirsin.
+              </div>
+            ) : (
+              <div className="mt-10 grid gap-5 md:grid-cols-3">
+                {featuredCandidates.map((c) => {
+                  const skills = (c.skills || "")
+                    .split(",")
+                    .map((skill) => skill.trim())
+                    .filter(Boolean)
+                    .slice(0, 4);
+                  const completed =
+                    [c.full_name, c.department, c.city || c.location, c.school, c.skills].filter(
+                      Boolean,
+                    ).length * 20;
+                  return (
+                    <article key={c.id} className="card-soft card-hover relative p-5">
+                      <div className="flex items-center gap-3">
+                        <div className="grid size-12 place-items-center rounded-full bg-accent text-base font-bold text-accent-foreground">
+                          {c.full_name?.[0] || "S"}
+                        </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="grid size-12 place-items-center rounded-full bg-accent text-base font-bold text-accent-foreground">
-                      {c.name[0]}
-                    </div>
+                        <div>
+                          <h3 className="font-bold">{c.full_name || "Stajyer adayı"}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {c.department || "Alan belirtilmemiş"} ·{" "}
+                            {c.city || c.location || "Konum yok"}
+                          </p>
+                        </div>
+                      </div>
 
-                    <div>
-                      <h3 className="font-bold">{c.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {c.field} · {c.city}
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        {c.school || "Okul belirtilmemiş"}
                       </p>
-                    </div>
-                  </div>
 
-                  <p className="mt-4 text-sm text-muted-foreground">{c.school}</p>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {skills.map((s) => (
+                          <span
+                            key={s}
+                            className="rounded-md bg-accent px-2 py-1 text-xs font-medium text-accent-foreground"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
 
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {c.skills.map((s) => (
-                      <span
-                        key={s}
-                        className="rounded-md bg-accent px-2 py-1 text-xs font-medium text-accent-foreground"
-                      >
-                        {s}
-                      </span>
-                    ))}
-                  </div>
+                      <div className="mt-5 flex items-center justify-between text-xs">
+                        <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                          <span className="size-2 rounded-full bg-success" /> Staj arıyor
+                        </span>
 
-                  <div className="mt-5 flex items-center justify-between text-xs">
-                    <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
-                      <span className="size-2 rounded-full bg-success" /> Staj arıyor
-                    </span>
+                        <span className="text-muted-foreground">Profil %{completed}</span>
+                      </div>
 
-                    <span className="text-muted-foreground">Profil %{c.pct}</span>
-                  </div>
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${completed}%` }}
+                        />
+                      </div>
 
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${c.pct}%` }}
-                    />
-                  </div>
+                      <div className="mt-5 grid grid-cols-2 gap-2">
+                        <Link to="/stajyer-bul" className="btn btn-outline h-10 text-sm">
+                          Profili İncele
+                        </Link>
 
-                  <div className="mt-5 grid grid-cols-2 gap-2">
-                    <Link to="/stajyer-bul" className="btn btn-outline h-10 text-sm">
-                      Profili İncele
-                    </Link>
-
-                    <Link to="/kayit" className="btn btn-primary h-10 text-sm shadow-none">
-                      Teklif Gönder
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
+                        <Link
+                          to="/stajyer-bul"
+                          className="btn btn-primary h-10 text-sm shadow-none"
+                        >
+                          Teklif Gönder
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
 

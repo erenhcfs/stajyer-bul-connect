@@ -25,6 +25,12 @@ export function Footer() {
           <Link to="/isverenler" className="hover:text-foreground">
             İşverenler
           </Link>
+          <Link to="/gizlilik" className="hover:text-foreground">
+            Gizlilik ve KVKK
+          </Link>
+          <Link to="/kullanim-kosullari" className="hover:text-foreground">
+            Kullanım Koşulları
+          </Link>
         </nav>
         <p className="text-xs text-muted-foreground">
           © {new Date().getFullYear()} StajyerBul · stajyerbul.com.tr

@@ -1,4 +1,4 @@
-import type { Profile, JobListing } from "@/lib/models";
+import type { Profile, JobListing, JobApplication } from "@/lib/models";
 import type { User } from "@supabase/supabase-js";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -15,6 +15,8 @@ import {
   CheckCircle2,
   Trash2,
   MapPin,
+  Mail,
+  Phone,
 } from "lucide-react";
 
 export const Route = createFileRoute("/isletme-paneli")({
@@ -138,6 +140,7 @@ function IsletmePaneliPage() {
 
   // İlanlar ve Yeni İlan Formu
   const [myListings, setMyListings] = useState<JobListing[]>([]);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -187,7 +190,7 @@ function IsletmePaneliPage() {
         setAbout(profileData.about || "");
 
         if (profileData.role === "isveren" && profileData.approval_status === "onaylandi") {
-          fetchMyListings(session.user.id);
+          await Promise.all([fetchMyListings(session.user.id), fetchApplications()]);
         }
       }
     } catch (error) {
@@ -208,6 +211,28 @@ function IsletmePaneliPage() {
       return;
     }
     if (data) setMyListings(data);
+  };
+
+  const fetchApplications = async () => {
+    const { data, error } = await supabase.rpc("get_employer_applications");
+    if (error) {
+      setLoadError("Başvurular yüklenemedi: " + error.message);
+      return;
+    }
+    setApplications((data || []) as JobApplication[]);
+  };
+
+  const updateApplicationStatus = async (id: string, status: JobApplication["status"]) => {
+    const { error } = await supabase.from("job_applications").update({ status }).eq("id", id);
+    if (error) {
+      setLoadError("Başvuru güncellenemedi: " + error.message);
+      return;
+    }
+    setApplications((items) =>
+      items.map((application) =>
+        application.id === id ? { ...application, status } : application,
+      ),
+    );
   };
 
   // Güvenlik ve Doğrulama Kontrollü Başvuru Gönderimi
@@ -395,8 +420,7 @@ function IsletmePaneliPage() {
 
   const hasApplied = profile?.role === "isveren";
   const isApproved = profile?.approval_status === "onaylandi";
-  const isPending =
-    profile?.approval_status === "beklemede" || profile?.approval_status === "reddedildi";
+  const isPending = profile?.approval_status === "beklemede";
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -660,6 +684,89 @@ function IsletmePaneliPage() {
                 </div>
               )}
             </div>
+
+            <section className="space-y-4">
+              <h2 className="text-xl font-bold">Gelen Başvurular ({applications.length})</h2>
+              {applications.length === 0 ? (
+                <div className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+                  İlanlarınıza henüz başvuru gelmedi.
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {applications.map((application) => (
+                    <article
+                      key={application.id}
+                      className="rounded-2xl border border-border bg-card p-6 shadow-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold text-primary">
+                            {application.listing_title}
+                          </p>
+                          <h3 className="mt-1 text-lg font-bold">
+                            {application.candidate_name || "İsimsiz aday"}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {[application.candidate_school, application.candidate_department]
+                              .filter(Boolean)
+                              .join(" · ") || "Profil bilgisi belirtilmemiş"}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold">
+                          {application.status === "pending"
+                            ? "Yeni"
+                            : application.status === "accepted"
+                              ? "Kabul"
+                              : application.status === "rejected"
+                                ? "Red"
+                                : "İnceleniyor"}
+                        </span>
+                      </div>
+                      {application.candidate_skills && (
+                        <p className="mt-3 text-sm text-muted-foreground">
+                          {application.candidate_skills}
+                        </p>
+                      )}
+                      {application.cover_letter && (
+                        <p className="mt-3 rounded-xl bg-muted p-3 text-sm whitespace-pre-line">
+                          {application.cover_letter}
+                        </p>
+                      )}
+                      <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                        {application.candidate_email && (
+                          <a
+                            className="btn btn-outline"
+                            href={`mailto:${application.candidate_email}`}
+                          >
+                            <Mail className="size-3.5" /> E-posta
+                          </a>
+                        )}
+                        {application.candidate_phone && (
+                          <a
+                            className="btn btn-outline"
+                            href={`tel:${application.candidate_phone}`}
+                          >
+                            <Phone className="size-3.5" /> Ara
+                          </a>
+                        )}
+                        <button
+                          className="btn btn-outline"
+                          onClick={() => updateApplicationStatus(application.id, "accepted")}
+                        >
+                          Kabul Et
+                        </button>
+                        <button
+                          className="btn btn-ghost"
+                          onClick={() => updateApplicationStatus(application.id, "rejected")}
+                        >
+                          Reddet
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         )}
 

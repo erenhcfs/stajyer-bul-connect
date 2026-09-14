@@ -21,6 +21,8 @@ function StajyerBulPage() {
   const [candidates, setCandidates] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
+  const [actionMessage, setActionMessage] = useState("");
+  const [sendingTo, setSendingTo] = useState<string | null>(null);
 
   // Filtreler
   const [searchQuery, setSearchQuery] = useState("");
@@ -55,12 +57,7 @@ function StajyerBulPage() {
     setLoading(true);
     setLoadError("");
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .in("role", ["stajyer", "ogrenci"])
-        .eq("is_looking_for_internship", true)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.rpc("list_public_candidates", { limit_count: 100 });
 
       if (error) throw error;
       if (data) {
@@ -73,21 +70,24 @@ function StajyerBulPage() {
     }
   };
 
-  // Open a draft; the user sends the email from their email application.
-  const handleSendOffer = (candidate: Profile) => {
+  const handleSendOffer = async (candidate: Profile) => {
+    setActionMessage("");
     if (
       !userProfile ||
       userProfile.role !== "isveren" ||
       userProfile.approval_status !== "onaylandi"
     ) {
-      alert("Adayla iletişim kurmak için onaylı işveren hesabıyla giriş yapın.");
+      setActionMessage("Teklif göndermek için onaylı işletme hesabıyla giriş yapın.");
       return;
     }
-    if (!candidate.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate.email)) {
-      alert("Aday e-posta adresini paylaşmamış.");
-      return;
-    }
-    window.location.href = `mailto:${encodeURIComponent(candidate.email)}?subject=${encodeURIComponent("Staj teklifi")}`;
+    if (sendingTo) return;
+    setSendingTo(candidate.id);
+    const { error } = await supabase.rpc("send_internship_offer", {
+      target_candidate: candidate.id,
+      offer_message: `${userProfile.company_name || "İşletmemiz"} sizinle staj fırsatı için görüşmek istiyor.`,
+    });
+    setSendingTo(null);
+    setActionMessage(error ? `Teklif gönderilemedi: ${error.message}` : "Teklif adaya iletildi.");
   };
 
   const filteredCandidates = candidates.filter((item) => {
@@ -130,6 +130,11 @@ function StajyerBulPage() {
               yapmanız gerekir.
             </p>
           </div>
+        )}
+        {actionMessage && (
+          <p role="status" className="mb-6 rounded-xl border border-border bg-card p-4 text-sm">
+            {actionMessage}
+          </p>
         )}
 
         {/* Filtre Alanı */}
@@ -279,9 +284,11 @@ function StajyerBulPage() {
                 <div className="mt-6 pt-4 border-t border-border">
                   <button
                     onClick={() => handleSendOffer(candidate)}
+                    disabled={sendingTo === candidate.id}
                     className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition shadow"
                   >
-                    <Send className="size-3.5" /> Staj Teklifi Gönder
+                    <Send className="size-3.5" />{" "}
+                    {sendingTo === candidate.id ? "Gönderiliyor..." : "Staj Teklifi Gönder"}
                   </button>
                 </div>
               </div>
