@@ -2,6 +2,8 @@ export type Profile = {
   id: string;
   role: string;
   approval_status?: string | null;
+  approval_expires_at?: string | null;
+  rejection_reason?: string | null;
   full_name?: string | null;
   email?: string | null;
   phone?: string | null;
@@ -22,6 +24,13 @@ export type Profile = {
   about?: string | null;
   is_looking_for_internship?: boolean | null;
   created_at?: string;
+  updated_at?: string;
+};
+
+export type PlatformSettings = {
+  candidate_approval_days: number;
+  max_active_listings: number;
+  applications_enabled: boolean;
 };
 export type JobListing = {
   id: string;

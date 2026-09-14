@@ -151,7 +151,7 @@ function IsletmePaneliPage() {
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
 
-  const MAX_LISTING_LIMIT = 5;
+  const [maxListingLimit, setMaxListingLimit] = useState(5);
 
   useEffect(() => {
     checkUserAndProfile();
@@ -171,6 +171,10 @@ function IsletmePaneliPage() {
       }
 
       setUser(session.user);
+      const { data: publicSettings } = await supabase.rpc("get_public_platform_settings");
+      if (publicSettings?.[0]?.max_active_listings) {
+        setMaxListingLimit(publicSettings[0].max_active_listings);
+      }
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
@@ -333,8 +337,8 @@ function IsletmePaneliPage() {
     setFormError("");
     setFormSuccess("");
 
-    if (myListings.length >= MAX_LISTING_LIMIT) {
-      setFormError(`Maksimum ilan limitine (${MAX_LISTING_LIMIT}) ulaştınız.`);
+    if (myListings.filter((item) => item.status !== "closed").length >= maxListingLimit) {
+      setFormError(`Aktif ilan limitine (${maxListingLimit}) ulaştınız.`);
       return;
     }
 
@@ -440,9 +444,16 @@ function IsletmePaneliPage() {
             </div>
 
             {profile?.approval_status === "reddedildi" && (
-              <p role="status" className="mb-4 text-destructive">
-                Başvurunuz reddedildi. Bilgilerinizi düzelterek yeniden başvurabilirsiniz.
-              </p>
+              <div
+                role="status"
+                className="mb-4 rounded-xl bg-destructive/10 p-4 text-sm text-destructive"
+              >
+                <strong>Başvurunuz reddedildi.</strong>
+                {profile.rejection_reason && (
+                  <p className="mt-1">Sebep: {profile.rejection_reason}</p>
+                )}
+                <p className="mt-1">Bilgilerinizi düzelterek yeniden başvurabilirsiniz.</p>
+              </div>
             )}
             {appError && (
               <div className="mb-6 p-4 rounded-xl bg-destructive/10 text-destructive text-sm flex items-center gap-2">
@@ -582,7 +593,7 @@ function IsletmePaneliPage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 transition"
               >
                 <Plus className="size-4" /> Yeni Staj İlanı Ekle ({myListings.length}/
-                {MAX_LISTING_LIMIT})
+                {maxListingLimit})
               </button>
             </div>
 
@@ -648,7 +659,8 @@ function IsletmePaneliPage() {
             {/* İlan Listesi */}
             <div className="space-y-4">
               <h2 className="text-xl font-bold">
-                Yayınlanan İlanlar ({myListings.length} / {MAX_LISTING_LIMIT})
+                Yayınlanan İlanlar ({myListings.filter((item) => item.status !== "closed").length} /{" "}
+                {maxListingLimit})
               </h2>
               {myListings.length === 0 ? (
                 <div className="text-center py-12 rounded-2xl border border-border bg-card p-8">

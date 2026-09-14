@@ -57,6 +57,8 @@ function IlanlarPage() {
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedListing, setSelectedListing] = useState<JobListing | null>(null);
+  const [maxListingLimit, setMaxListingLimit] = useState(5);
+  const [applicationsEnabled, setApplicationsEnabled] = useState(true);
 
   // Yeni İlan Form State'leri
   const [title, setTitle] = useState("");
@@ -71,6 +73,12 @@ function IlanlarPage() {
   useEffect(() => {
     fetchUserAndProfile();
     fetchListings();
+    supabase.rpc("get_public_platform_settings").then(({ data }) => {
+      if (data?.[0]) {
+        setMaxListingLimit(data[0].max_active_listings || 5);
+        setApplicationsEnabled(data[0].applications_enabled !== false);
+      }
+    });
   }, []);
 
   const fetchUserAndProfile = async () => {
@@ -134,9 +142,11 @@ function IlanlarPage() {
       const { count, error: countError } = await supabase
         .from("job_listings")
         .select("id", { count: "exact", head: true })
-        .eq("employer_id", user.id);
+        .eq("employer_id", user.id)
+        .eq("status", "active");
       if (countError) throw countError;
-      if ((count ?? 0) >= 5) throw new Error("En fazla 5 ilan yayınlayabilirsiniz.");
+      if ((count ?? 0) >= maxListingLimit)
+        throw new Error(`En fazla ${maxListingLimit} aktif ilan yayınlayabilirsiniz.`);
       const { error } = await supabase.from("job_listings").insert({
         employer_id: user.id,
         title,
@@ -171,6 +181,10 @@ function IlanlarPage() {
   };
 
   const handleApply = async () => {
+    if (!applicationsEnabled) {
+      setApplicationMessage("Yeni başvurular geçici olarak durduruldu.");
+      return;
+    }
     if (!user) {
       void navigate({ to: "/giris" });
       return;
@@ -411,10 +425,14 @@ function IlanlarPage() {
                 )}
                 <button
                   onClick={handleApply}
-                  disabled={applying}
+                  disabled={applying || !applicationsEnabled}
                   className="flex-1 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90"
                 >
-                  {applying ? "Gönderiliyor..." : "Başvuruyu Gönder"}
+                  {applying
+                    ? "Gönderiliyor..."
+                    : applicationsEnabled
+                      ? "Başvuruyu Gönder"
+                      : "Başvurular geçici olarak kapalı"}
                 </button>
                 <button
                   onClick={() => setSelectedListing(null)}

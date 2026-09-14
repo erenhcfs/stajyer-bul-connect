@@ -196,45 +196,116 @@ export async function handleAdminRequest(request: Request): Promise<Response | n
     const db = serviceClient();
     if (path === "/api/admin-data") {
       if (request.method === "GET") {
-        const [employers, listings] = await Promise.all([
+        const [employers, candidates, listings, settings] = await Promise.all([
           db
             .from("profiles")
             .select("*")
             .eq("role", "isveren")
             .order("created_at", { ascending: false }),
+          db
+            .from("profiles")
+            .select("*")
+            .in("role", ["stajyer", "ogrenci"])
+            .order("created_at", { ascending: false }),
           db.from("job_listings").select("*").order("created_at", { ascending: false }),
+          db.from("platform_settings").select("*").eq("id", true).single(),
         ]);
         if (employers.error) throw employers.error;
+        if (candidates.error) throw candidates.error;
         if (listings.error) throw listings.error;
-        return json({ employers: employers.data, listings: listings.data });
+        if (settings.error) throw settings.error;
+        return json({
+          employers: employers.data,
+          candidates: candidates.data,
+          listings: listings.data,
+          settings: settings.data,
+        });
       }
       const body = (await request.json()) ?? {};
+      if (request.method === "PATCH" && body.resource === "settings") {
+        const days = Number(body.candidate_approval_days);
+        const limit = Number(body.max_active_listings);
+        if (
+          !Number.isInteger(days) ||
+          days < 1 ||
+          days > 90 ||
+          !Number.isInteger(limit) ||
+          limit < 1 ||
+          limit > 50 ||
+          typeof body.applications_enabled !== "boolean"
+        )
+          return json({ error: "Ayar değerleri geçersiz." }, 400);
+        const { data, error } = await db
+          .from("platform_settings")
+          .update({
+            candidate_approval_days: days,
+            max_active_listings: limit,
+            applications_enabled: body.applications_enabled,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", true)
+          .select("*")
+          .single();
+        if (error) throw error;
+        return json({ settings: data });
+      }
       if (typeof body.id !== "string" || !/^[0-9a-f-]{36}$/i.test(body.id))
         return json({ error: "Geçersiz kayıt." }, 400);
-      if (request.method === "PATCH" && ["onaylandi", "reddedildi"].includes(body.status)) {
+      if (
+        request.method === "PATCH" &&
+        ["employer", "candidate"].includes(body.resource) &&
+        ["onaylandi", "reddedildi", "beklemede"].includes(body.status)
+      ) {
+        const reason = typeof body.reason === "string" ? body.reason.trim() : "";
+        if (body.status === "reddedildi" && (reason.length < 5 || reason.length > 500))
+          return json({ error: "Red sebebi 5-500 karakter olmalıdır." }, 400);
+        const roleFilter = body.resource === "employer" ? ["isveren"] : ["stajyer", "ogrenci"];
+        let expiresAt: string | null = null;
+        if (body.resource === "candidate" && body.status === "onaylandi") {
+          const requestedDays = Number(body.days);
+          const { data: setting } = await db
+            .from("platform_settings")
+            .select("candidate_approval_days")
+            .eq("id", true)
+            .single();
+          const days =
+            Number.isInteger(requestedDays) && requestedDays >= 1 && requestedDays <= 90
+              ? requestedDays
+              : setting?.candidate_approval_days || 10;
+          expiresAt = new Date(Date.now() + days * 86_400_000).toISOString();
+        }
         const { data, error } = await db
           .from("profiles")
-          .update({ approval_status: body.status })
+          .update({
+            approval_status: body.status,
+            approval_expires_at: expiresAt,
+            rejection_reason: body.status === "reddedildi" ? reason : null,
+          })
           .eq("id", body.id)
-          .eq("role", "isveren")
+          .in("role", roleFilter)
           .select("id")
           .single();
         if (error) throw error;
-        if (body.status === "reddedildi") {
-          const { error: deleteError } = await db
+        if (body.resource === "employer" && body.status === "reddedildi") {
+          const { error: closeError } = await db
             .from("job_listings")
-            .delete()
+            .update({ status: "closed" })
             .eq("employer_id", body.id);
-          if (deleteError)
-            return json(
-              {
-                error:
-                  "İşveren reddedildi ancak ilanları kaldırılamadı. İlanları yönetim panelinden kontrol edin.",
-              },
-              500,
-            );
+          if (closeError) throw closeError;
         }
         return json({ profile: data });
+      }
+      if (request.method === "PATCH" && body.resource === "listing") {
+        if (!["active", "closed"].includes(body.status))
+          return json({ error: "Geçersiz ilan durumu." }, 400);
+        const { data, error } = await db
+          .from("job_listings")
+          .update({ status: body.status })
+          .eq("id", body.id)
+          .select("id,status")
+          .single();
+        if (error) throw error;
+        return json({ listing: data });
       }
       if (request.method === "DELETE") {
         const { error } = await db

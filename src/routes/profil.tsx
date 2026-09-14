@@ -77,6 +77,9 @@ function ProfilPage() {
   const [isLookingForInternship, setIsLookingForInternship] = useState(false);
   const [offers, setOffers] = useState<InternshipOffer[]>([]);
   const [applications, setApplications] = useState<CandidateApplication[]>([]);
+  const [approvalStatus, setApprovalStatus] = useState<string | null>(null);
+  const [approvalExpiresAt, setApprovalExpiresAt] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
 
   // İşveren Form Alanları
   const [companyName, setCompanyName] = useState("");
@@ -122,6 +125,9 @@ function ProfilPage() {
         setSkills(data.skills || "");
         setAvatarUrl(data.avatar_url || "");
         setIsLookingForInternship(!!data.is_looking_for_internship);
+        setApprovalStatus(data.approval_status || null);
+        setApprovalExpiresAt(data.approval_expires_at || null);
+        setRejectionReason(data.rejection_reason || null);
 
         setCompanyName(data.company_name || "");
         setSector(data.sector || "");
@@ -582,6 +588,24 @@ function ProfilPage() {
                   className="size-5 rounded border-input accent-primary cursor-pointer"
                 />
               </div>
+              {isLookingForInternship && approvalStatus !== "onaylandi" && (
+                <div
+                  className={`rounded-xl p-4 text-sm ${approvalStatus === "reddedildi" ? "bg-destructive/10 text-destructive" : "bg-amber-500/10 text-amber-700"}`}
+                >
+                  <strong>
+                    {approvalStatus === "reddedildi"
+                      ? "Profiliniz yayınlanmadı."
+                      : "Profiliniz yönetici onayı bekliyor."}
+                  </strong>
+                  {rejectionReason && <p className="mt-1">Sebep: {rejectionReason}</p>}
+                </div>
+              )}
+              {isLookingForInternship && approvalStatus === "onaylandi" && approvalExpiresAt && (
+                <p className="rounded-xl bg-emerald-500/10 p-4 text-sm text-emerald-700">
+                  Profiliniz {new Date(approvalExpiresAt).toLocaleDateString("tr-TR")} tarihine
+                  kadar işletmelere açık.
+                </p>
+              )}
             </>
           ) : (
             <div className="space-y-4">

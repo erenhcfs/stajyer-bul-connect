@@ -84,6 +84,54 @@ test("cross-origin mutations are rejected and logout only accepts POST", async (
   const response = await call("admin-logout", "POST", {}, cookie);
   assert.match(response.headers.get("set-cookie"), /Max-Age=0/);
 });
+test("moderation rejects invalid ids, missing reasons, and unsafe setting values", async () => {
+  const cookie = await login();
+  process.env.SUPABASE_URL = "https://database.test";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+  assert.equal(
+    (
+      await call(
+        "admin-data",
+        "PATCH",
+        { resource: "candidate", id: "invalid", status: "onaylandi" },
+        cookie,
+      )
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await call(
+        "admin-data",
+        "PATCH",
+        {
+          resource: "employer",
+          id: "00000000-0000-0000-0000-000000000000",
+          status: "reddedildi",
+          reason: "",
+        },
+        cookie,
+      )
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await call(
+        "admin-data",
+        "PATCH",
+        {
+          resource: "settings",
+          candidate_approval_days: 0,
+          max_active_listings: 100,
+          applications_enabled: true,
+        },
+        cookie,
+      )
+    ).status,
+    400,
+  );
+});
 test("missing server configuration is explicit", async () => {
   const secret = process.env.ADMIN_SESSION_SECRET;
   delete process.env.ADMIN_SESSION_SECRET;
