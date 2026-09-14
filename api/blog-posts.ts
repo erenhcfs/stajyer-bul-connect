@@ -1,1 +1,1 @@
-export { default } from "../src/lib/vercel-admin.server.ts";
+export { default } from "../server-runtime/vercel-admin.server.js";

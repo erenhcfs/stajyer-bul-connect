@@ -1,0 +1,23 @@
+export type BlogPost = {
+    image_url?: string | null;
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string;
+    content: string;
+    category: string;
+    author_name: string;
+    author_initials: string;
+    published: boolean;
+    view_count: number;
+    seo_title?: string | null;
+    seo_description?: string | null;
+    keywords?: string[] | null;
+    created_at: string;
+    updated_at?: string | null;
+};
+export declare const BLOG_CATEGORIES: string[];
+export declare function categoryGradient(category: string): string;
+export declare function formatPostDate(iso: string): string;
+export declare function estimateReadTime(content: string): string;
+export declare function slugify(input: string): string;

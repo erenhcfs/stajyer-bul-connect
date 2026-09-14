@@ -1,4 +1,4 @@
-import { sitemapResponse } from "../src/lib/sitemap.server.ts";
+import { sitemapResponse } from "../server-runtime/sitemap.server.js";
 
 export default {
   async fetch() {
