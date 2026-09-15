@@ -167,13 +167,20 @@ export async function handleAdminRequest(request) {
                     throw candidates.error;
                 if (listings.error)
                     throw listings.error;
-                if (settings.error)
+                const settingsMissing = settings.error?.code === "PGRST205";
+                if (settings.error && !settingsMissing)
                     throw settings.error;
                 return json({
                     employers: employers.data,
                     candidates: candidates.data,
                     listings: listings.data,
-                    settings: settings.data,
+                    settings: settings.data ||
+                        {
+                            candidate_approval_days: 10,
+                            max_active_listings: 5,
+                            applications_enabled: true,
+                        },
+                    database_setup_required: settingsMissing,
                 });
             }
             const body = (await request.json()) ?? {};
@@ -199,6 +206,8 @@ export async function handleAdminRequest(request) {
                     .eq("id", true)
                     .select("*")
                     .single();
+                if (error?.code === "PGRST205")
+                    return json({ error: "Gelişmiş yönetim veritabanı kurulumu henüz yapılmamış." }, 409);
                 if (error)
                     throw error;
                 return json({ settings: data });
@@ -236,6 +245,8 @@ export async function handleAdminRequest(request) {
                     .in("role", roleFilter)
                     .select("id")
                     .single();
+                if (error?.code === "PGRST204" || error?.code === "PGRST205")
+                    return json({ error: "Gelişmiş yönetim veritabanı kurulumu henüz yapılmamış." }, 409);
                 if (error)
                     throw error;
                 if (body.resource === "employer" && body.status === "reddedildi") {

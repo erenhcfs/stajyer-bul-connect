@@ -76,6 +76,7 @@ function YonetimPage() {
   const [candidates, setCandidates] = useState<Profile[]>([]);
   const [listings, setListings] = useState<JobListing[]>([]);
   const [settings, setSettings] = useState<PlatformSettings>(initialSettings);
+  const [databaseSetupRequired, setDatabaseSetupRequired] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<RejectTarget | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [busy, setBusy] = useState(false);
@@ -90,6 +91,7 @@ function YonetimPage() {
       setCandidates(data.candidates || []);
       setListings(data.listings || []);
       setSettings(data.settings || initialSettings);
+      setDatabaseSetupRequired(data.database_setup_required === true);
     } catch (error) {
       setMessage({
         text: error instanceof Error ? error.message : "Veriler yüklenemedi.",
@@ -326,6 +328,13 @@ function YonetimPage() {
             className={`mb-5 rounded-xl p-3 text-sm ${message.error ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-700"}`}
           >
             {message.text}
+          </div>
+        )}
+        {databaseSetupRequired && (
+          <div className="mb-5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-800">
+            <strong>Veritabanı kurulumu eksik.</strong> Stajyer süreli onayı, red sebebi ve platform
+            ayarları için <code>20260915000000_advanced_admin.sql</code> migration dosyasını
+            Supabase SQL Editor’da çalıştırın.
           </div>
         )}
         <div className="mb-7 flex gap-2 overflow-x-auto pb-1">
