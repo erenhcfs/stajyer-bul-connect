@@ -24,29 +24,45 @@ const WAGE_2026 = {
 export const STATIC_BLOG_POSTS = [
     post({
         slug: "2027-mesem-maaslari-ne-kadar-olacak",
-        title: "2027 MESEM Maaşları Ne Kadar Olacak? Güncel Hesaplama",
-        excerpt: "2027 MESEM ücretleri henüz açıklanmadı. Mevcut oranlarla olası tutarları ve kesin maaşın nasıl hesaplanacağını inceleyin.",
+        title: "2027 MESEM Maaşı 10.500 TL Olabilir! Sınıf Sınıf Hesaplama",
+        excerpt: "Net asgari ücret 35.000 TL olursa 9, 10 ve 11. sınıf MESEM öğrencileri yaklaşık 10.500 TL, 12. sınıf kalfalar 17.500 TL alabilir.",
         category: "Sektör Haberleri",
-        seo_title: "2027 MESEM Maaşları Ne Kadar Olacak?",
-        seo_description: "2027 MESEM maaşı henüz kesinleşmedi. Çırak ve 12. sınıf kalfa ücretlerini yüzde 30 ve yüzde 50 oranlarıyla senaryolu hesapladık.",
+        seo_title: "2027 MESEM Maaşı 10.500 TL Olabilir!",
+        seo_description: "2027 net asgari ücret 35 bin TL olursa MESEM maaşı kaç TL olur? 9, 10, 11 ve 12. sınıf için dikkat çeken tahmini hesaplama.",
         keywords: ["2027 MESEM maaşı", "MESEM ücretleri", "çırak maaşı 2027", "kalfa maaşı 2027"],
-        content: `2027 MESEM maaşı henüz resmî olarak açıklanmadı. Kesin rakam, 2027 yılında geçerli olacak net asgari ücret ilan edildikten sonra hesaplanabilecek. İnternette kesin tutar gibi paylaşılan rakamlara temkinli yaklaşmak gerekir.
+        content: `2027 yılında net asgari ücretin yaklaşık 35.000 TL olması senaryosu gerçekleşirse MESEM öğrencilerinin maaşı da ciddi şekilde artabilir. Bugünkü yüzde 30 ve yüzde 50 kuralları devam ederse 9, 10 ve 11. sınıf öğrencileri yaklaşık 10.500 TL, 12. sınıftaki kalfalar ise yaklaşık 17.500 TL alabilir.
 
-## MESEM maaşı hangi kurala göre hesaplanıyor?
+> Hızlı cevap: 35.000 TL net asgari ücret senaryosunda 9-11. sınıf MESEM maaşı 10.500 TL, 12. sınıf kalfa maaşı 17.500 TL olabilir.
 
-Millî Eğitim Bakanlığının açıkladığı mevcut uygulamada 9, 10 ve 11. sınıftaki MESEM öğrencilerine net asgari ücretin en az yüzde 30'u, 12. sınıfta kalfalık yeterliliğini kazanan öğrencilere ise en az yüzde 50'si ödenir. Mevzuat değişirse hesaplama da değişebilir.
+2027 MESEM maaşı henüz resmî olarak açıklanmadı. Buradaki 35.000 TL, hesaplamayı göstermek için kullanılan tahmini bir senaryodur; kesinleşmiş asgari ücret değildir.
 
-## 2026 yılında MESEM maaşı kaç TL?
+## 2027 MESEM maaşı sınıfa göre kaç TL olabilir?
 
-Çalışma ve Sosyal Güvenlik Bakanlığına göre 2026 net asgari ücret 28.075,50 TL'dir. Mevcut oranlarla yüzde 30 karşılığı 8.422,65 TL, yüzde 50 karşılığı 14.037,75 TL olur.
+- 9. sınıf MESEM öğrencisi: Yaklaşık 10.500 TL
+- 10. sınıf MESEM öğrencisi: Yaklaşık 10.500 TL
+- 11. sınıf MESEM öğrencisi: Yaklaşık 10.500 TL
+- 12. sınıf kalfalık yeterliliği bulunan öğrenci: Yaklaşık 17.500 TL
 
-## 2027 için olası maaş senaryoları
+Bu hesapta 35.000 TL'nin yüzde 30'u 10.500 TL, yüzde 50'si 17.500 TL'dir. İşletme yasal tabandan daha fazla ödeme yapabilir.
+
+## Neden maaşlar sınıfa göre değişiyor?
+
+Millî Eğitim Bakanlığının açıkladığı mevcut uygulamada 9, 10 ve 11. sınıftaki MESEM öğrencilerine net asgari ücretin en az yüzde 30'u ödenir. Kalfalık yeterliliğini kazanan 12. sınıf öğrencilerinde oran en az yüzde 50'ye çıkar. 2027'de bu oranlar değişirse rakamlar da değişir.
+
+## 2026'dan 2027'ye ne kadar artış olabilir?
+
+Çalışma ve Sosyal Güvenlik Bakanlığına göre 2026 net asgari ücret 28.075,50 TL'dir. Buna göre 2026'da yüzde 30 hesabı 8.422,65 TL, yüzde 50 hesabı 14.037,75 TL'dir. Net asgari ücret 2027'de 35.000 TL olursa:
+
+- 9-11. sınıf için aylık artış yaklaşık 2.077 TL olabilir.
+- 12. sınıf kalfalar için aylık artış yaklaşık 3.462 TL olabilir.
+
+## Asgari ücret farklı açıklanırsa maaş ne olur?
 
 - Net asgari ücret yüzde 20 artarsa 33.690,60 TL olur; yüzde 30 karşılığı 10.107,18 TL, yüzde 50 karşılığı 16.845,30 TL olur.
 - Yüzde 25 artarsa yaklaşık 35.094,38 TL olur; yüzde 30 karşılığı yaklaşık 10.528,31 TL, yüzde 50 karşılığı yaklaşık 17.547,19 TL olur.
 - Yüzde 30 artarsa 36.498,15 TL olur; yüzde 30 karşılığı 10.949,45 TL, yüzde 50 karşılığı 18.249,08 TL olur.
 
-Bu rakamlar yalnızca hesap örneğidir; zam tahmini veya resmî açıklama değildir.
+> Bu rakamlar yalnızca hesap örneğidir. 2027 asgari ücreti ve MESEM ücretleri henüz kesinleşmedi.
 
 ## Kesin 2027 MESEM ücreti ne zaman belli olur?
 
@@ -67,29 +83,33 @@ Son güncelleme: 15 Eylül 2026. Resmî tutar açıklandığında bu yazı günc
     }),
     post({
         slug: "2027-stajyer-maasi-ne-kadar-olacak",
-        title: "2027 Stajyer Maaşı Ne Kadar Olacak? Hesaplama Rehberi",
-        excerpt: "2027 staj ücretinin hangi kurala göre hesaplanacağını, öğrenci türüne ve işletmeye göre değişebilen noktaları öğrenin.",
+        title: "2027 Stajyer Maaşı 10.500 TL Olabilir mi? Yeni Ücret Hesabı",
+        excerpt: "Net asgari ücret 35.000 TL olursa yüzde 30 üzerinden ücret alan öğrenciler yaklaşık 10.500 TL staj maaşı alabilir.",
         category: "Sektör Haberleri",
-        seo_title: "2027 Stajyer Maaşı Ne Kadar Olacak?",
-        seo_description: "2027 stajyer maaşı henüz açıklanmadı. Mevcut kuralları, net asgari ücret bağlantısını ve hesaplama yöntemini anlattık.",
+        seo_title: "2027 Stajyer Maaşı 10.500 TL Olabilir mi?",
+        seo_description: "2027 net asgari ücret 35 bin TL olursa stajyer maaşı kaç TL olur? Yüzde 30 hesabı, öğrenci türleri ve tahmini yeni ücret.",
         keywords: ["2027 stajyer maaşı", "staj ücreti 2027", "zorunlu staj maaşı", "staj parası"],
-        content: `2027 stajyer maaşı için bugün kesin bir TL tutarı vermek mümkün değildir. Tutar; 2027 net asgari ücreti, öğrencinin eğitim programı, sınıfı ve tabi olduğu mevzuata göre belirlenir. MESEM öğrencisi ile üniversitede zorunlu staj yapan öğrencinin koşulları aynı olmayabilir.
+        content: `2027 net asgari ücretinin 35.000 TL olduğu bir senaryoda, ücreti net asgari ücretin yüzde 30'u üzerinden hesaplanan öğrenciler yaklaşık 10.500 TL alabilir. Yüzde 50 oranına tabi kalfa öğrenciler için bu tutar yaklaşık 17.500 TL'ye çıkabilir.
 
-## Önce öğrenci statünü belirle
+> Kısa hesap: 35.000 × yüzde 30 = 10.500 TL. 35.000 × yüzde 50 = 17.500 TL.
 
-MESEM, mesleki ve teknik ortaöğretim, üniversite zorunlu stajı ve isteğe bağlı staj için farklı kurallar veya iş yeri uygulamaları bulunabilir. En güvenilir bilgi okulun staj koordinatörlüğü ile imzalanacak sözleşmededir.
+Bu rakamlar dikkat çeken bir 2027 senaryosudur. Asgari ücret henüz resmî olarak açıklanmadığı için kesin staj maaşı olarak değerlendirilmemelidir.
 
-## Ücret sözleşmede açıkça yazmalı
+## 2027'de kim yaklaşık 10.500 TL alabilir?
 
-Çalışma günleri, ücret, ödeme tarihi, sigorta işlemini yapacak kurum ve yemek ya da yol desteği yazılı hâle getirilmelidir. Belirsiz ifadeler yerine tutarın veya hesaplama oranının sözleşmede bulunmasını iste.
+Ücret hesabı yüzde 30 tabanına bağlı olan mesleki eğitim öğrencileri, net asgari ücret 35.000 TL olursa yaklaşık 10.500 TL alabilir. Ancak MESEM, mesleki ve teknik ortaöğretim, üniversite zorunlu stajı ve isteğe bağlı staj aynı kurallara tabi değildir.
 
-## 2027 tahmini nasıl yapılabilir?
+## 12. sınıf kalfa öğrenciler ne kadar alabilir?
 
-Yasal tabanı net asgari ücretin belirli bir oranına bağlı olan öğrenciler için yeni asgari ücret açıklandıktan sonra çarpma yapılır. Örneğin programın için yüzde 30 oranı geçerliyse net asgari ücret 0,30 ile çarpılır. Bu yalnızca tabanı gösterir; işveren daha yüksek ödeme yapabilir.
+Mevcut yüzde 50 kuralı devam ederse ve net asgari ücret 35.000 TL olursa kalfalık yeterliliğini kazanmış 12. sınıf MESEM öğrencisinin taban ücreti yaklaşık 17.500 TL olabilir.
 
-## Kesin bilgi için nereyi takip etmelisin?
+## Her stajyer aynı maaşı mı alacak?
 
-Asgari Ücret Tespit Komisyonu açıklamalarını, Resmî Gazete'yi, MEB duyurularını ve okulunun bildirimlerini takip et. Sosyal medyadaki kaynaksız “kesinleşti” paylaşımlarına göre plan yapma.`,
+Hayır. Öğrencinin programı, sınıfı, sözleşmesi ve iş yerinin uygulaması tutarı değiştirebilir. İşveren tabanın üzerinde ücret, yemek veya yol desteği sağlayabilir. Çalışma günleri, ödeme tarihi ve sigortayı yapacak kurum sözleşmede açıkça yazmalıdır.
+
+## Kesin rakam ne zaman ortaya çıkacak?
+
+2027 net asgari ücreti açıklandığında programına uygulanan oranla çarpılarak kesin taban hesaplanabilir. Resmî açıklamaları, MEB duyurularını ve okulunun bildirimlerini takip et.`,
         sources: [WAGE_2026, MEB_RATES],
     }),
     post({

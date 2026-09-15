@@ -382,6 +382,15 @@ function ArticleContent({ content }: { content: string }) {
                 {block.slice(3)}
               </h2>
             );
+          if (block.startsWith("> "))
+            return (
+              <aside
+                key={index}
+                className="rounded-2xl border border-primary/25 bg-primary/10 px-5 py-4 text-base font-semibold leading-7 text-foreground"
+              >
+                {block.slice(2)}
+              </aside>
+            );
           const lines = block.split("\n");
           if (lines.every((line) => /^[-*] /.test(line)))
             return (
