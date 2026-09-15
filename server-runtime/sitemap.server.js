@@ -8,6 +8,8 @@ export async function sitemapResponse() {
         "/ilanlar",
         "/stajyer-bul",
         "/hakkimizda",
+        "/iletisim",
+        "/rehber",
         "/nasil-calisir",
         "/gizlilik",
         "/kullanim-kosullari",

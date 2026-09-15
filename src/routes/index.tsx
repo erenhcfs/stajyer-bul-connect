@@ -61,7 +61,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:image",
-        content: "https://stajyerbul.com.tr/og-image.jpg",
+        content: "https://stajyerbul.com.tr/logo.png",
       },
       {
         name: "twitter:card",
@@ -77,7 +77,7 @@ export const Route = createFileRoute("/")({
       },
       {
         name: "twitter:image",
-        content: "https://stajyerbul.com.tr/og-image.jpg",
+        content: "https://stajyerbul.com.tr/logo.png",
       },
     ],
     links: [{ rel: "canonical", href: "https://stajyerbul.com.tr/" }],

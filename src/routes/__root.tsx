@@ -5,6 +5,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -108,6 +109,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "twitter:description",
         content: "Staj arayan öğrenciler ile stajyer arayan işletmeleri buluşturan platform.",
       },
+      {
+        name: "google-adsense-account",
+        content: "ca-pub-2311108731423361",
+      },
     ],
 
     links: [
@@ -144,6 +149,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   const [adConsent, setAdConsent] = useState<"accepted" | "rejected" | null>(null);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
 
   useEffect(() => {
     const saved = localStorage.getItem("stajyerbul_ad_consent");
@@ -152,8 +158,9 @@ function RootShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (adConsent !== "accepted") return;
-    // Advertising and analytics load only after hydration and explicit consent.
-    if (!document.getElementById("stajyerbul-adsense")) {
+    const contentAllowsAds = pathname === "/blog" || pathname.startsWith("/blog/");
+    // Advertising loads only on editorial content after explicit consent.
+    if (contentAllowsAds && !document.getElementById("stajyerbul-adsense")) {
       const script = document.createElement("script");
       script.id = "stajyerbul-adsense";
       script.async = true;
@@ -174,7 +181,7 @@ function RootShell({ children }: { children: ReactNode }) {
       gtag("js", new Date());
       gtag("config", "G-5YBEH9YHFJ", { send_page_view: true });
     }
-  }, [adConsent]);
+  }, [adConsent, pathname]);
 
   const chooseConsent = (value: "accepted" | "rejected") => {
     localStorage.setItem("stajyerbul_ad_consent", value);

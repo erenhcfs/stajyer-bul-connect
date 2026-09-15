@@ -14,6 +14,7 @@ export default tseslint.config(
       ".vercel",
       ".wrangler",
       ".tanstack",
+      "server-runtime",
       "src/routeTree.gen.ts",
     ],
   },

@@ -21,7 +21,7 @@ export const Route = createFileRoute("/hakkimizda")({
       {
         name: "description",
         content:
-          "StajyerBul projesi hakkında hikayemiz, geliştirilme aşamamız ve destek arayışımız.",
+          "StajyerBul'un amacı, çalışma yaklaşımı ve öğrenci ile işletmelere sunduğu hizmetler.",
       },
     ],
   }),
@@ -50,10 +50,10 @@ function HakkimizdaPage() {
         {/* Başlık Bölümü */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 text-amber-500 text-xs font-bold border border-amber-500/20 shadow-sm animate-pulse">
-            <Sparkles className="size-4" /> Vizyon ve Gelişim Süreci
+            <Sparkles className="size-4" /> Misyon ve çalışma yaklaşımı
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-            StajyerBul Hikayesi ve <span className="text-amber-500">Gelecek Hedefleri</span>
+            StajyerBul Hakkında
           </h1>
           <p className="text-muted-foreground text-base max-w-2xl mx-auto">
             MESEM, meslek lisesi ve üniversite öğrencilerinin iş dünyasına ilk adımlarını
@@ -63,7 +63,7 @@ function HakkimizdaPage() {
 
         {/* Bilgi Kartları */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Geliştirilme Aşaması */}
+          {/* Platform amacı */}
           <div className="rounded-2xl border border-border bg-card p-8 shadow-sm space-y-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-10 text-primary">
               <Code2 className="size-24" />
@@ -71,16 +71,16 @@ function HakkimizdaPage() {
             <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
               <Rocket className="size-6" />
             </div>
-            <h2 className="text-xl font-bold">Henüz Geliştirilme Aşamasındayız</h2>
+            <h2 className="text-xl font-bold">Neden StajyerBul?</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              StajyerBul şu anda aktif olarak geliştirilmekte olan bir prototip ve büyüme
-              aşamasındaki bir projedir. Öğrencilerin işletmelerle en doğru eşleşmeyi yapabilmesi
-              için yeni yapay zeka ve filtreleme özelliklerini her geçen gün sisteme ekliyoruz. Geri
-              bildirimleriniz bizim için çok değerli!
+              Öğrencilerin eğitimlerine uygun staj fırsatlarını daha kolay bulmasını, işletmelerin
+              ise ihtiyaç duydukları adaylara düzenli ve güvenli bir süreçle ulaşmasını sağlıyoruz.
+              Profil ve ilan denetimleriyle tarafların daha doğru bilgiye ulaşmasına yardımcı
+              oluyoruz.
             </p>
           </div>
 
-          {/* Destek Arayışı */}
+          {/* Platform hedefi */}
           <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-8 shadow-sm space-y-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-10 text-amber-500">
               <Sparkles className="size-24" />
@@ -88,23 +88,22 @@ function HakkimizdaPage() {
             <div className="size-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">
               <HeartHandshake className="size-6" />
             </div>
-            <h2 className="text-xl font-bold text-amber-600 dark:text-amber-400">
-              Girişimimize Destek Arıyoruz
-            </h2>
+            <h2 className="text-xl font-bold text-amber-600 dark:text-amber-400">Hedefimiz</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Bu vizyonu büyütecek, genç istihdamına katkı sağlayacak yatırımcılar, mentorlar ve
-              teknoloji ortakları arıyoruz. Projemize katkı sunmak, ortak olmak veya destek vermek
-              isterseniz Startup Market üzerinden inceleyip bizimle iletişime geçebilirsiniz.
+              Mesleki eğitim alan öğrencilerin iş hayatına hazırlanmasını kolaylaştıran, işletmeler
+              için de anlaşılır ve verimli bir aday bulma deneyimi sunan güvenilir bir platform
+              oluşturmak. Kullanıcı geri bildirimlerini hizmet kalitesini geliştirmek için düzenli
+              olarak değerlendiriyoruz.
             </p>
           </div>
         </div>
 
         {/* İletişim / Destek Çağrısı */}
         <div className="rounded-2xl border border-border bg-muted/40 p-8 text-center space-y-4">
-          <h3 className="text-lg font-bold">Bize Katılın veya Destek Olun</h3>
+          <h3 className="text-lg font-bold">Bizimle İletişime Geçin</h3>
           <p className="text-xs text-muted-foreground max-w-xl mx-auto">
-            Projenin gelişim sürecini takip etmek, işbirliği yapmak veya destek olmak için bizimle
-            iletişime geçin.
+            Hesap, ilan, başvuru, iş birliği veya gizlilik konularındaki sorularınız için bize
+            ulaşabilirsiniz.
           </p>
           <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             <button

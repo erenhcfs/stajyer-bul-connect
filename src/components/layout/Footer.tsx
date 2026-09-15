@@ -25,6 +25,18 @@ export function Footer() {
           <Link to="/isverenler" className="hover:text-foreground">
             İşverenler
           </Link>
+          <Link to="/blog" className="hover:text-foreground">
+            Blog
+          </Link>
+          <Link to="/rehber" className="hover:text-foreground">
+            Staj Rehberi
+          </Link>
+          <Link to="/hakkimizda" className="hover:text-foreground">
+            Hakkımızda
+          </Link>
+          <Link to="/iletisim" className="hover:text-foreground">
+            Bize Ulaşın
+          </Link>
           <Link to="/gizlilik" className="hover:text-foreground">
             Gizlilik ve KVKK
           </Link>
