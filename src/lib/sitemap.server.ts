@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { STATIC_BLOG_POSTS } from "./blog-posts.js";
 
 const SITE_URL = "https://stajyerbul.com.tr";
 const escapeXml = (value: string) =>
@@ -15,11 +16,15 @@ export async function sitemapResponse() {
     "/stajyer-bul",
     "/hakkimizda",
     "/iletisim",
-    "/rehber",
     "/nasil-calisir",
     "/gizlilik",
     "/kullanim-kosullari",
   ].map((path) => ({ loc: `${SITE_URL}${path}` }));
+  for (const post of STATIC_BLOG_POSTS)
+    entries.push({
+      loc: `${SITE_URL}/blog/${encodeURIComponent(post.slug)}`,
+      lastmod: post.updated_at || post.created_at,
+    });
   const url = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"];
   const key = process.env["VITE_SUPABASE_ANON_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
   if (url && key) {
@@ -29,23 +34,21 @@ export async function sitemapResponse() {
         .select("slug,created_at,updated_at")
         .eq("published", true);
       if (error) throw error;
+      const existing = new Set(entries.map((entry) => entry.loc));
       for (const post of data ?? [])
         if (typeof post.slug === "string")
-          entries.push({
-            loc: `${SITE_URL}/blog/${encodeURIComponent(post.slug)}`,
-            ...(typeof post.updated_at === "string"
-              ? { lastmod: post.updated_at }
-              : typeof post.created_at === "string"
-                ? { lastmod: post.created_at }
-                : {}),
-          });
+          if (!existing.has(`${SITE_URL}/blog/${encodeURIComponent(post.slug)}`))
+            entries.push({
+              loc: `${SITE_URL}/blog/${encodeURIComponent(post.slug)}`,
+              ...(typeof post.updated_at === "string"
+                ? { lastmod: post.updated_at }
+                : typeof post.created_at === "string"
+                  ? { lastmod: post.created_at }
+                  : {}),
+            });
     } catch (error) {
       console.error("Sitemap:", error);
-      // Do not cache a partial sitemap when the database is unavailable.
-      return new Response("Sitemap geçici olarak kullanılamıyor.", {
-        status: 503,
-        headers: { "Cache-Control": "no-store" },
-      });
+      // Static editorial URLs keep the sitemap useful during a database outage.
     }
   }
   return new Response(

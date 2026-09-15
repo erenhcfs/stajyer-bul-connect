@@ -27,19 +27,24 @@ import {
   formatPostDate,
   type BlogPost,
 } from "@/lib/blog-helpers";
+import { mergeBlogPosts } from "@/lib/blog-posts";
 
 const SITE_URL = "https://stajyerbul.com.tr";
 
 export const Route = createFileRoute("/blog")({
   component: BlogPage,
   loader: async () => {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .select("*")
-      .eq("published", true)
-      .order("created_at", { ascending: false });
-    if (error) throw new Error("Blog yüklenemedi. Lütfen yeniden deneyin.");
-    return (data ?? []) as BlogPost[];
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .eq("published", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return mergeBlogPosts((data ?? []) as BlogPost[]);
+    } catch {
+      return mergeBlogPosts();
+    }
   },
   head: ({ loaderData }) => ({
     meta: [

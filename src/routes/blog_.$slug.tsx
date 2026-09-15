@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 import { estimateReadTime, type BlogPost } from "@/lib/blog-helpers";
+import { mergeBlogPosts, STATIC_BLOG_POSTS, type EditorialBlogPost } from "@/lib/blog-posts";
 import { AdUnit } from "@/components/AdUnit";
 
 const SITE_URL = "https://stajyerbul.com.tr";
@@ -14,15 +15,21 @@ const SITE_URL = "https://stajyerbul.com.tr";
 export const Route = createFileRoute("/blog_/$slug")({
   component: BlogDetailPage,
   loader: async ({ params }) => {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .select("*")
-      .eq("slug", params.slug)
-      .eq("published", true)
-      .maybeSingle();
-    if (error) throw new Error("Blog yazısı yüklenemedi. Lütfen yeniden deneyin.");
-    if (!data) throw notFound();
-    return data as BlogPost;
+    const staticPost = STATIC_BLOG_POSTS.find((item) => item.slug === params.slug);
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .eq("slug", params.slug)
+        .eq("published", true)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) return data as EditorialBlogPost;
+    } catch {
+      // Editorial posts remain available when Supabase is temporarily unavailable.
+    }
+    if (!staticPost) throw notFound();
+    return staticPost;
   },
   head: ({ loaderData }) => {
     // Google SEO ve Arama Motoru Optimizasyonu için Dinamik Head Meta Etiketleri
@@ -94,6 +101,22 @@ export const Route = createFileRoute("/blog_/$slug")({
                 ],
               }),
             },
+            ...(loaderData.faqs?.length
+              ? [
+                  {
+                    type: "application/ld+json",
+                    children: JSON.stringify({
+                      "@context": "https://schema.org",
+                      "@type": "FAQPage",
+                      mainEntity: loaderData.faqs.map((faq) => ({
+                        "@type": "Question",
+                        name: faq.question,
+                        acceptedAnswer: { "@type": "Answer", text: faq.answer },
+                      })),
+                    }),
+                  },
+                ]
+              : []),
           ]
         : [],
     };
@@ -115,7 +138,12 @@ function BlogDetailPage() {
       .order("created_at", { ascending: false })
       .limit(3)
       .then(({ data }) => {
-        if (active) setRecentPosts((data ?? []) as BlogPost[]);
+        if (active)
+          setRecentPosts(
+            mergeBlogPosts((data ?? []) as BlogPost[])
+              .filter((item) => item.slug !== post.slug)
+              .slice(0, 3),
+          );
       });
     return () => {
       active = false;
@@ -205,7 +233,7 @@ function BlogDetailPage() {
                 <p className="text-sm font-bold text-foreground">
                   {post.author_name || "Stajyer Bul Ekibi"}
                 </p>
-                <p className="text-xs text-muted-foreground">Uzman Kariyer Danışmanı</p>
+                <p className="text-xs text-muted-foreground">StajyerBul içerik ekibi</p>
               </div>
             </div>
             <Button
@@ -244,6 +272,47 @@ function BlogDetailPage() {
 
           {/* Makale İçeriği (Paragraflar halinde mükemmel okunabilirlik) */}
           <ArticleContent content={post.content} />
+
+          {post.sources?.length ? (
+            <section
+              className="mt-10 rounded-2xl border bg-muted/30 p-5"
+              aria-labelledby="sources-title"
+            >
+              <h2 id="sources-title" className="font-bold">
+                Kaynaklar
+              </h2>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                {post.sources.map((source) => (
+                  <li key={source.url}>
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      {source.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {post.faqs?.length ? (
+            <section className="mt-10" aria-labelledby="faq-title">
+              <h2 id="faq-title" className="text-2xl font-extrabold">
+                Sık Sorulan Sorular
+              </h2>
+              <div className="mt-4 space-y-3">
+                {post.faqs.map((faq) => (
+                  <details key={faq.question} className="rounded-xl border bg-card p-4">
+                    <summary className="cursor-pointer font-semibold">{faq.question}</summary>
+                    <p className="mt-3 text-sm leading-7 text-muted-foreground">{faq.answer}</p>
+                  </details>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           {/* GOOGLE ADS / ADSENSE ALANI (Makale Altı Reklam Slotu) */}
           <AdUnit

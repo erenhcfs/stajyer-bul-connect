@@ -23,7 +23,6 @@ import { Route as KayitRouteImport } from './routes/kayit'
 import { Route as KullanimKosullariRouteImport } from './routes/kullanim-kosullari'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as ProfilRouteImport } from './routes/profil'
-import { Route as RehberRouteImport } from './routes/rehber'
 import { Route as SifreYenileRouteImport } from './routes/sifre-yenile'
 import { Route as StajyerBulRouteImport } from './routes/stajyer-bul'
 import { Route as YonetimRouteImport } from './routes/yonetim'
@@ -99,11 +98,6 @@ const ProfilRoute = ProfilRouteImport.update({
   path: '/profil',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RehberRoute = RehberRouteImport.update({
-  id: '/rehber',
-  path: '/rehber',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SifreYenileRoute = SifreYenileRouteImport.update({
   id: '/sifre-yenile',
   path: '/sifre-yenile',
@@ -140,7 +134,6 @@ export interface FileRoutesByFullPath {
   '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/profil': typeof ProfilRoute
-  '/rehber': typeof RehberRoute
   '/sifre-yenile': typeof SifreYenileRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
@@ -161,7 +154,6 @@ export interface FileRoutesByTo {
   '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/profil': typeof ProfilRoute
-  '/rehber': typeof RehberRoute
   '/sifre-yenile': typeof SifreYenileRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
@@ -183,7 +175,6 @@ export interface FileRoutesById {
   '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/profil': typeof ProfilRoute
-  '/rehber': typeof RehberRoute
   '/sifre-yenile': typeof SifreYenileRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
@@ -206,7 +197,6 @@ export interface FileRouteTypes {
     | '/kullanim-kosullari'
     | '/nasil-calisir'
     | '/profil'
-    | '/rehber'
     | '/sifre-yenile'
     | '/stajyer-bul'
     | '/yonetim'
@@ -227,7 +217,6 @@ export interface FileRouteTypes {
     | '/kullanim-kosullari'
     | '/nasil-calisir'
     | '/profil'
-    | '/rehber'
     | '/sifre-yenile'
     | '/stajyer-bul'
     | '/yonetim'
@@ -248,7 +237,6 @@ export interface FileRouteTypes {
     | '/kullanim-kosullari'
     | '/nasil-calisir'
     | '/profil'
-    | '/rehber'
     | '/sifre-yenile'
     | '/stajyer-bul'
     | '/yonetim'
@@ -270,7 +258,6 @@ export interface RootRouteChildren {
   KullanimKosullariRoute: typeof KullanimKosullariRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
   ProfilRoute: typeof ProfilRoute
-  RehberRoute: typeof RehberRoute
   SifreYenileRoute: typeof SifreYenileRoute
   StajyerBulRoute: typeof StajyerBulRoute
   YonetimRoute: typeof YonetimRoute
@@ -377,13 +364,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfilRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/rehber': {
-      id: '/rehber'
-      path: '/rehber'
-      fullPath: '/rehber'
-      preLoaderRoute: typeof RehberRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sifre-yenile': {
       id: '/sifre-yenile'
       path: '/sifre-yenile'
@@ -430,7 +410,6 @@ const rootRouteChildren: RootRouteChildren = {
   KullanimKosullariRoute: KullanimKosullariRoute,
   NasilCalisirRoute: NasilCalisirRoute,
   ProfilRoute: ProfilRoute,
-  RehberRoute: RehberRoute,
   SifreYenileRoute: SifreYenileRoute,
   StajyerBulRoute: StajyerBulRoute,
   YonetimRoute: YonetimRoute,

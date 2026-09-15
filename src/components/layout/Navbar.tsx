@@ -92,14 +92,6 @@ export function Navbar() {
           >
             Blog
           </Link>
-          <Link
-            to="/rehber"
-            className="rounded-lg px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            activeProps={{ className: "text-foreground" }}
-          >
-            Rehber
-          </Link>
-
           {/* Hakkımızda Menüsü (En Sağda) */}
           <Link
             to="/hakkimizda"
@@ -196,13 +188,6 @@ export function Navbar() {
               className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
             >
               Blog
-            </Link>
-            <Link
-              to="/rehber"
-              onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
-            >
-              Staj Rehberi
             </Link>
             <Link
               to="/iletisim"

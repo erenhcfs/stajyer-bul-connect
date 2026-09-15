@@ -28,9 +28,6 @@ export function Footer() {
           <Link to="/blog" className="hover:text-foreground">
             Blog
           </Link>
-          <Link to="/rehber" className="hover:text-foreground">
-            Staj Rehberi
-          </Link>
           <Link to="/hakkimizda" className="hover:text-foreground">
             Hakkımızda
           </Link>
