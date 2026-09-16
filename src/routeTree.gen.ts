@@ -24,6 +24,7 @@ import { Route as KullanimKosullariRouteImport } from './routes/kullanim-kosulla
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as SifreYenileRouteImport } from './routes/sifre-yenile'
+import { Route as SlaytRouteImport } from './routes/slayt'
 import { Route as StajyerBulRouteImport } from './routes/stajyer-bul'
 import { Route as YonetimRouteImport } from './routes/yonetim'
 import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
@@ -103,6 +104,11 @@ const SifreYenileRoute = SifreYenileRouteImport.update({
   path: '/sifre-yenile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SlaytRoute = SlaytRouteImport.update({
+  id: '/slayt',
+  path: '/slayt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StajyerBulRoute = StajyerBulRouteImport.update({
   id: '/stajyer-bul',
   path: '/stajyer-bul',
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/profil': typeof ProfilRoute
   '/sifre-yenile': typeof SifreYenileRoute
+  '/slayt': typeof SlaytRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/profil': typeof ProfilRoute
   '/sifre-yenile': typeof SifreYenileRoute
+  '/slayt': typeof SlaytRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/profil': typeof ProfilRoute
   '/sifre-yenile': typeof SifreYenileRoute
+  '/slayt': typeof SlaytRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
   '/blog_/$slug': typeof BlogSlugRoute
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/nasil-calisir'
     | '/profil'
     | '/sifre-yenile'
+    | '/slayt'
     | '/stajyer-bul'
     | '/yonetim'
     | '/blog/$slug'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/nasil-calisir'
     | '/profil'
     | '/sifre-yenile'
+    | '/slayt'
     | '/stajyer-bul'
     | '/yonetim'
     | '/blog/$slug'
@@ -238,6 +249,7 @@ export interface FileRouteTypes {
     | '/nasil-calisir'
     | '/profil'
     | '/sifre-yenile'
+    | '/slayt'
     | '/stajyer-bul'
     | '/yonetim'
     | '/blog_/$slug'
@@ -259,6 +271,7 @@ export interface RootRouteChildren {
   NasilCalisirRoute: typeof NasilCalisirRoute
   ProfilRoute: typeof ProfilRoute
   SifreYenileRoute: typeof SifreYenileRoute
+  SlaytRoute: typeof SlaytRoute
   StajyerBulRoute: typeof StajyerBulRoute
   YonetimRoute: typeof YonetimRoute
   BlogSlugRoute: typeof BlogSlugRoute
@@ -371,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SifreYenileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/slayt': {
+      id: '/slayt'
+      path: '/slayt'
+      fullPath: '/slayt'
+      preLoaderRoute: typeof SlaytRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stajyer-bul': {
       id: '/stajyer-bul'
       path: '/stajyer-bul'
@@ -411,6 +431,7 @@ const rootRouteChildren: RootRouteChildren = {
   NasilCalisirRoute: NasilCalisirRoute,
   ProfilRoute: ProfilRoute,
   SifreYenileRoute: SifreYenileRoute,
+  SlaytRoute: SlaytRoute,
   StajyerBulRoute: StajyerBulRoute,
   YonetimRoute: YonetimRoute,
   BlogSlugRoute: BlogSlugRoute,
