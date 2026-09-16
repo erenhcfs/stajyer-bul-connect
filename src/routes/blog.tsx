@@ -238,10 +238,14 @@ function BlogPage() {
                             <Clock className="size-3" />
                             {estimateReadTime(featuredPost.content)}
                           </span>
-                          <span>·</span>
-                          <span className="inline-flex items-center gap-1">
-                            <Eye className="size-3" /> {featuredPost.view_count ?? 0}
-                          </span>
+                          {featuredPost.view_count !== null && (
+                            <>
+                              <span>·</span>
+                              <span className="inline-flex items-center gap-1">
+                                <Eye className="size-3" /> {featuredPost.view_count}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -288,9 +292,11 @@ function BlogPage() {
                           <span>{post.author_name}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1">
-                            <Eye className="size-3" /> {post.view_count ?? 0}
-                          </span>
+                          {post.view_count !== null && (
+                            <span className="inline-flex items-center gap-1">
+                              <Eye className="size-3" /> {post.view_count}
+                            </span>
+                          )}
                           <span className="inline-flex items-center gap-1">
                             <Clock className="size-3" /> {estimateReadTime(post.content)}
                           </span>

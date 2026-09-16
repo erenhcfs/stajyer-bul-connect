@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { estimateReadTime, type BlogPost } from "@/lib/blog-helpers";
 import { mergeBlogPosts, STATIC_BLOG_POSTS, type EditorialBlogPost } from "@/lib/blog-posts";
 import { AdUnit } from "@/components/AdUnit";
+import { recordBlogView } from "@/lib/blog-views";
 
 const SITE_URL = "https://stajyerbul.com.tr";
 
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/blog_/$slug")({
         .eq("published", true)
         .maybeSingle();
       if (error) throw error;
-      if (data) return data as EditorialBlogPost;
+      if (data) return { ...staticPost, ...data } as EditorialBlogPost;
     } catch {
       // Editorial posts remain available when Supabase is temporarily unavailable.
     }
@@ -126,7 +127,11 @@ export const Route = createFileRoute("/blog_/$slug")({
 function BlogDetailPage() {
   const post = Route.useLoaderData();
   const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
-  const [viewCount, setViewCount] = useState(post.view_count ?? 0);
+  const [view, setView] = useState<{ slug: string; count: number | null }>({
+    slug: post.slug,
+    count: null,
+  });
+  const viewCount = view.slug === post.slug ? view.count : null;
   useEffect(() => {
     let active = true;
     setRecentPosts([]);
@@ -151,12 +156,14 @@ function BlogDetailPage() {
   }, [post.slug]);
 
   useEffect(() => {
-    const key = `blog-viewed:${post.slug}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, "1");
-    void supabase.rpc("increment_blog_view", { post_slug: post.slug }).then(({ data }) => {
-      if (typeof data === "number") setViewCount(data);
+    let active = true;
+    setView({ slug: post.slug, count: null });
+    void recordBlogView(post.slug).then((count) => {
+      if (active) setView({ slug: post.slug, count });
     });
+    return () => {
+      active = false;
+    };
   }, [post.slug]);
 
   if (!post) {
@@ -213,9 +220,11 @@ function BlogDetailPage() {
             <span className="flex items-center gap-1 text-xs">
               <Clock className="size-3.5" /> {estimateReadTime(post.content)} okuma
             </span>
-            <span className="flex items-center gap-1 text-xs">
-              <Eye className="size-3.5" /> {viewCount} görüntülenme
-            </span>
+            {viewCount !== null && (
+              <span className="flex items-center gap-1 text-xs">
+                <Eye className="size-3.5" /> {viewCount} görüntülenme
+              </span>
+            )}
           </div>
 
           {/* Makale Başlığı (H1 - Google SEO için hayati önem taşır) */}

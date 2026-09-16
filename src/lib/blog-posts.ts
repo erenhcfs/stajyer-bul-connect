@@ -28,7 +28,7 @@ function post(
     author_name: AUTHOR,
     author_initials: "SB",
     published: true,
-    view_count: 0,
+    view_count: null,
     created_at: DATE,
     updated_at: DATE,
     image_url: null,
@@ -404,7 +404,7 @@ Makine, elektrik, kimyasal veya kişisel veri içeren sistemle çalışacaksan e
 export function mergeBlogPosts(databasePosts: BlogPost[] = []): EditorialBlogPost[] {
   const bySlug = new Map<string, EditorialBlogPost>();
   for (const item of STATIC_BLOG_POSTS) bySlug.set(item.slug, item);
-  for (const item of databasePosts) bySlug.set(item.slug, item);
+  for (const item of databasePosts) bySlug.set(item.slug, { ...bySlug.get(item.slug), ...item });
   return [...bySlug.values()].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );

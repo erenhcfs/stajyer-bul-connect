@@ -1,6 +1,7 @@
 import "./lib/error-capture";
 import { sitemapResponse } from "./lib/sitemap.server";
 import { handleAdminRequest } from "./lib/admin.server";
+import { blogViewResponse } from "./lib/blog-views.server";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
@@ -49,6 +50,7 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      if (new URL(request.url).pathname === "/api/blog-view") return blogViewResponse(request);
       if (["/sitemap.xml", "/api/sitemap.xml"].includes(new URL(request.url).pathname))
         return sitemapResponse();
       const apiResponse = await handleAdminRequest(request);

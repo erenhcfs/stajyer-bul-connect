@@ -17,6 +17,7 @@
     "exactOptionalPropertyTypes": true
   },
   "include": [
+    "src/lib/blog-views.server.ts",
     "src/lib/admin.server.ts",
     "src/lib/blog-helpers.ts",
     "src/lib/sitemap.server.ts",
