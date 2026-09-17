@@ -8,11 +8,15 @@ export async function sitemapResponse() {
         "/blog",
         "/ilanlar",
         "/stajyer-bul",
+        "/isverenler",
         "/hakkimizda",
         "/iletisim",
         "/nasil-calisir",
         "/gizlilik",
         "/kullanim-kosullari",
+        "/editorial-politika",
+        "/yazarlar/stajyerbul-editorleri",
+        "/araclar/mesem-maas-hesaplama",
     ].map((path) => ({ loc: `${SITE_URL}${path}` }));
     for (const post of STATIC_BLOG_POSTS)
         entries.push({

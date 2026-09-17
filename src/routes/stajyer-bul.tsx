@@ -7,6 +7,15 @@ import { Footer } from "@/components/layout/Footer";
 import { Search, MapPin, BookOpen, Send, User, ShieldAlert, School } from "lucide-react";
 
 export const Route = createFileRoute("/stajyer-bul")({
+  loader: async () => {
+    try {
+      const { data, error } = await supabase.rpc("list_public_candidates", { limit_count: 100 });
+      if (error) throw error;
+      return { candidates: (data ?? []) as Profile[] };
+    } catch {
+      return { candidates: [] as Profile[] };
+    }
+  },
   head: () => ({
     meta: [
       { title: "Stajyer Bul — StajyerBul" },
@@ -17,9 +26,10 @@ export const Route = createFileRoute("/stajyer-bul")({
 });
 
 function StajyerBulPage() {
+  const initial = Route.useLoaderData();
   const [loadError, setLoadError] = useState("");
-  const [candidates, setCandidates] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [candidates, setCandidates] = useState<Profile[]>(initial.candidates);
+  const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [actionMessage, setActionMessage] = useState("");
   const [sendingTo, setSendingTo] = useState<string | null>(null);
@@ -31,10 +41,10 @@ function StajyerBulPage() {
   const [selectedTerm, setSelectedTerm] = useState("tumu");
 
   useEffect(() => {
-    checkAuthAndFetch();
+    checkAuth();
   }, []);
 
-  const checkAuthAndFetch = async () => {
+  const checkAuth = async () => {
     try {
       const {
         data: { session },
@@ -50,7 +60,6 @@ function StajyerBulPage() {
     } catch {
       setUserProfile(null);
     }
-    await fetchCandidates();
   };
 
   const fetchCandidates = async () => {

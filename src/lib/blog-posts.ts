@@ -24,13 +24,14 @@ function post(
 ): EditorialBlogPost {
   return {
     ...input,
+    content: `${input.content}${EDITORIAL_ADDENDA[input.slug] ? `\n\n${EDITORIAL_ADDENDA[input.slug]}` : ""}`,
     id: `editorial-${input.slug}`,
     author_name: AUTHOR,
     author_initials: "SB",
     published: true,
     view_count: null,
-    created_at: DATE,
-    updated_at: DATE,
+    created_at: PUBLICATION_DATES[input.slug] || DATE,
+    updated_at: "2026-09-17T09:00:00.000Z",
     image_url: null,
   };
 }
@@ -42,6 +43,63 @@ const MEB_RATES = {
 const WAGE_2026 = {
   label: "Çalışma Bakanlığı 2026 asgari ücret hesabı",
   url: "https://www.csgb.gov.tr/poco-pages/asgari-ucret/",
+};
+
+const PUBLICATION_DATES: Record<string, string> = {
+  "stajin-ilk-gunu-ne-yapilir": "2026-08-18T09:00:00.000Z",
+  "staj-mulakati-sorulari-ve-cevaplari": "2026-08-22T09:00:00.000Z",
+  "staj-icin-cv-nasil-hazirlanir-ornek": "2026-08-27T09:00:00.000Z",
+  "zorunlu-staj-yeri-nasil-bulunur": "2026-09-02T09:00:00.000Z",
+  "2026-meslek-lisesi-staj-maasi-hesaplama": "2026-09-05T09:00:00.000Z",
+  "mesem-sigortasi-emeklilige-sayilir-mi": "2026-09-08T09:00:00.000Z",
+  "mesem-maasi-yatmadi-ne-yapmaliyim": "2026-09-10T09:00:00.000Z",
+  "mesem-nedir-kayit-sartlari-ve-egitim-sistemi": "2026-09-12T09:00:00.000Z",
+  "2027-stajyer-maasi-ne-kadar-olacak": "2026-09-14T09:00:00.000Z",
+};
+
+const EDITORIAL_ADDENDA: Record<string, string> = {
+  "mesem-maasi-yatmadi-ne-yapmaliyim": `## Başvuru yaparken hangi bilgileri yazmalısın?
+
+Talebinde adını, okulunu, işletmeyi, sözleşmedeki ödeme gününü ve hangi aya ait ödemenin eksik olduğunu belirt. IBAN veya kimlik numarası gibi hassas bilgileri herkese açık kanallarda paylaşma. Banka hareketinin yalnızca ilgili satırını ve sözleşmenin gerekli bölümünü yetkili birime göster.
+
+## Süreci hangi sırayla yükseltmelisin?
+
+Önce işletmedeki sorumlu kişi ve muhasebe, ardından koordinatör öğretmen veya okul yönetimiyle görüş. Çözülmezse okuldan bağlı bulunduğu ilçe millî eğitim birimini ve kullanman gereken resmî başvuru kanalını yazılı olarak iste. Her görüşmenin tarihini ve verilen yanıtı not etmek, aynı bilgileri tekrar tekrar anlatmanı önler.`,
+  "zorunlu-staj-yeri-nasil-bulunur": `## Bir haftalık uygulanabilir başvuru planı
+
+İlk gün okul koşullarını ve staj tarihini netleştir. İkinci gün CV ve kısa tanıtım metnini hazırla. Üçüncü gün on hedef işletme seç, dördüncü ve beşinci gün başvuruları gönder. Sonraki hafta yanıt gelmeyen uygun işletmelere tek bir nazik takip mesajı ilet. Bu düzen, rastgele başvuru yapmaktan daha kolay ölçülür.
+
+## Kabul gelince hemen kontrol et
+
+İşletmenin okul tarafından uygun sayıldığını yazılı doğrula. Başlangıç tarihi, iş günü, görev alanı, sigorta sorumluluğu ve istenen belgeler kesinleşmeden mevcut arayışını tamamen durdurma. Para veya zorunlu ürün satın alma isteyen, görev tanımını saklayan ya da kişisel belgelerini güvensiz kanaldan talep eden ilanlara karşı dikkatli ol.`,
+  "staj-icin-cv-nasil-hazirlanir-ornek": `## Kısa profil özeti örneği
+
+“Bilgisayar programcılığı ikinci sınıf öğrencisiyim. React ile iki ders projesi geliştirdim ve Git kullanıyorum. Yaz döneminde ön yüz geliştirme ekibinde gerçek ürün sürecini öğrenebileceğim zorunlu staj arıyorum.” Bu yapı; kim olduğunu, ne bildiğini ve ne aradığını üç cümlede anlatır. Bilmediğin teknolojileri yalnızca ilanda geçtiği için ekleme.
+
+## Göndermeden önce son kontrol
+
+Tarihlerin birbiriyle uyumlu olduğundan, bağlantıların açıldığından ve telefon numaranın doğru olduğundan emin ol. Fotoğraf veya doğum tarihi okul ya da işveren tarafından gerekli kılınmadıysa eklemek zorunda değilsin. CV'yi başka bir kişiye telefondan açtırarak okunabilirliğini kontrol et; küçük yazı ve yoğun grafikler mobil ekranda bilgi kaybettirebilir.`,
+  "staj-mulakati-sorulari-ve-cevaplari": `## 60 saniyelik tanıtım nasıl kurulur?
+
+Önce bölümünü ve sınıfını söyle, ardından pozisyonla ilişkili bir proje veya becerini anlat ve bu stajda öğrenmek istediğin konuyla bitir. Aile geçmişi gibi ilgisiz ayrıntılara girmeden bir dakikada tamamla. Şirketin ürününü veya hizmetini önceden incelemek, “neden bizi seçtin?” sorusuna somut cevap vermeni sağlar.
+
+## Görüşmeden sonra ne yapmalısın?
+
+Görüşme sonunda sonraki adımın ve tahmini dönüş süresinin ne olduğunu sor. Aynı gün kısa bir teşekkür mesajı gönderip ilgini yineleyebilirsin. Kabul sözlü verildiyse staj tarihi, görev alanı, çalışma düzeni ve okul evraklarını yazılı olarak netleştir. Reddedilirsen mümkünse geliştirebileceğin bir nokta için geri bildirim iste.`,
+  "stajin-ilk-gunu-ne-yapilir": `## İlk haftada güven kazanmanın yolu
+
+Verilen görevi kendi cümlelerinle tekrar ederek doğru anladığını teyit et. Teslim zamanı belli değilse sor; gecikeceğini fark edersen son dakikayı bekleme. Tamamladığın işte ne yaptığını ve hangi noktada desteğe ihtiyaç duyduğunu kısa biçimde anlat. Düzenli not tutmak aynı soruyu tekrar sorma ihtiyacını azaltır.
+
+## Sorun yaşarsan kime başvurmalısın?
+
+Önce işletmedeki sorumlu usta öğretici veya yöneticinle konuş. Güvenlik, taciz, ayrımcılık ya da sözleşmeye aykırı çalışma gibi ciddi bir durum varsa okul koordinatörüne gecikmeden bilgi ver. Tarih, yer ve olayı nesnel biçimde not et; acil riskte görevden uzaklaşıp yetkili kişiden yardım iste.`,
+  "mesem-nedir-kayit-sartlari-ve-egitim-sistemi": `## Alan seçerken yalnızca ücrete bakma
+
+Mesleğin günlük çalışma koşullarını, kullanılan ekipmanı, fiziksel gereklilikleri ve mezuniyet sonrası seçenekleri araştır. Mümkünse alanda çalışan biriyle konuş veya iş yerini önceden gör. İlgi duymadığın bir alanda yalnızca kısa vadeli ücret için başlamak, devam ve başarı sorununa dönüşebilir.
+
+## Kayıt günü için kontrol listesi
+
+Okuldan istenen belgelerin güncel listesini al; internet üzerindeki eski listeler değişmiş olabilir. İşletmenin uygunluğunu, usta öğretici şartını, sözleşme tarihini ve sigorta başlangıcını sor. İmzalanan her belgenin bir örneğini sakla ve anlamadığın maddeyi imzalamadan önce okul görevlisine danış.`,
 };
 
 export const STATIC_BLOG_POSTS: EditorialBlogPost[] = [
@@ -404,8 +462,27 @@ Makine, elektrik, kimyasal veya kişisel veri içeren sistemle çalışacaksan e
 export function mergeBlogPosts(databasePosts: BlogPost[] = []): EditorialBlogPost[] {
   const bySlug = new Map<string, EditorialBlogPost>();
   for (const item of STATIC_BLOG_POSTS) bySlug.set(item.slug, item);
-  for (const item of databasePosts) bySlug.set(item.slug, { ...bySlug.get(item.slug), ...item });
+  for (const item of databasePosts) {
+    const editorial = bySlug.get(item.slug);
+    bySlug.set(item.slug, mergeEditorialPost(editorial, item));
+  }
   return [...bySlug.values()].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
+}
+
+export function mergeEditorialPost(
+  editorial: EditorialBlogPost | undefined,
+  databasePost: BlogPost,
+): EditorialBlogPost {
+  if (!editorial) return databasePost as EditorialBlogPost;
+  const editorialUpdated = new Date(editorial.updated_at || editorial.created_at).getTime();
+  const databaseUpdated = new Date(databasePost.updated_at || databasePost.created_at).getTime();
+  if (databaseUpdated >= editorialUpdated) return { ...editorial, ...databasePost };
+  return {
+    ...databasePost,
+    ...editorial,
+    id: databasePost.id,
+    view_count: databasePost.view_count,
+  };
 }

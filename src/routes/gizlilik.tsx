@@ -39,13 +39,22 @@ function PrivacyPage() {
           <p>
             Kimlik doğrulama, veritabanı ve dosyalar Supabase altyapısında; site dağıtımı Vercel
             veya yapılandırılan barındırma sağlayıcısında tutulabilir. Reklam etkinleştirildiğinde
-            Google AdSense çerez veya benzer tanımlayıcılar kullanabilir. Tarayıcı ayarlarından
-            çerezleri sınırlandırabilirsiniz.
+            Google AdSense çerez veya benzer tanımlayıcılar kullanabilir. Reklam çerezleri yalnızca
+            gerekli onay verildikten sonra çalıştırılır. Google'ın iş ortağı sitelerindeki veri
+            kullanımı hakkında ayrıntılı bilgiye{" "}
+            <a
+              href="https://policies.google.com/technologies/partner-sites?hl=tr"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Google'ın açıklamasından
+            </a>{" "}
+            ulaşabilirsiniz. Tarayıcı ayarlarından çerezleri de sınırlandırabilirsiniz.
           </p>
           <h2>Haklarınız</h2>
           <p>
             Profilinizi hesabınızdan güncelleyebilirsiniz. Verilerinize erişme, düzeltme veya silme
-            talebi ile diğer KVKK talepleri için <Link to="/hakkimizda">iletişim sayfasından</Link>{" "}
+            talebi ile diğer KVKK talepleri için <Link to="/iletisim">iletişim sayfasından</Link>{" "}
             hesabınızda kullandığınız e-posta adresiyle bize ulaşabilirsiniz.
           </p>
           <h2>Güvenlik</h2>

@@ -19,6 +19,19 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/ilanlar")({
+  loader: async () => {
+    try {
+      const { data, error } = await supabase
+        .from("job_listings")
+        .select("*")
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return { listings: (data ?? []) as JobListing[] };
+    } catch {
+      return { listings: [] as JobListing[] };
+    }
+  },
   validateSearch: (search: Record<string, unknown>): { q?: string; city?: string } => ({
     ...(typeof search["q"] === "string" ? { q: search["q"] } : {}),
     ...(typeof search["city"] === "string" ? { city: search["city"] } : {}),
@@ -37,6 +50,7 @@ export const Route = createFileRoute("/ilanlar")({
 });
 
 function IlanlarPage() {
+  const initial = Route.useLoaderData();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [loadError, setLoadError] = useState("");
@@ -44,8 +58,8 @@ function IlanlarPage() {
   const [applying, setApplying] = useState(false);
   const [applicationMessage, setApplicationMessage] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
-  const [listings, setListings] = useState<JobListing[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [listings, setListings] = useState<JobListing[]>(initial.listings);
+  const [loading, setLoading] = useState(false);
   const searchQuery = search.q || "";
   const setSearchQuery = (q: string) => {
     void navigate({ search: (previous) => ({ ...previous, q }), replace: true });
@@ -72,7 +86,6 @@ function IlanlarPage() {
 
   useEffect(() => {
     fetchUserAndProfile();
-    fetchListings();
     supabase.rpc("get_public_platform_settings").then(({ data }) => {
       if (data?.[0]) {
         setMaxListingLimit(data[0].max_active_listings || 5);
@@ -108,6 +121,7 @@ function IlanlarPage() {
       const { data, error } = await supabase
         .from("job_listings")
         .select("*")
+        .eq("status", "active")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -314,6 +328,11 @@ function IlanlarPage() {
             <h3 className="text-lg font-semibold">İlan Bulunamadı</h3>
             <p className="text-sm text-muted-foreground mt-1">
               Arama kriterlerinize uygun aktif staj ilanı bulunmuyor.
+            </p>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+              Yeni ilanlar işletmeler tarafından yayınlandıkça burada görünür. Öğrenci profilinizi
+              tamamlayarak başvuruya hazır olabilir; işletme hesabınız varsa ücretsiz ilan
+              oluşturabilirsiniz.
             </p>
           </div>
         ) : (

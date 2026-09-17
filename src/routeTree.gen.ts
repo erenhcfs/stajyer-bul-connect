@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BlogYonetRouteImport } from './routes/blog-yonet'
+import { Route as EditorialPolitikaRouteImport } from './routes/editorial-politika'
 import { Route as GirisRouteImport } from './routes/giris'
 import { Route as GizlilikRouteImport } from './routes/gizlilik'
 import { Route as HakkimizdaRouteImport } from './routes/hakkimizda'
@@ -27,7 +28,9 @@ import { Route as SifreYenileRouteImport } from './routes/sifre-yenile'
 import { Route as SlaytRouteImport } from './routes/slayt'
 import { Route as StajyerBulRouteImport } from './routes/stajyer-bul'
 import { Route as YonetimRouteImport } from './routes/yonetim'
+import { Route as AraclarMesemMaasHesaplamaRouteImport } from './routes/araclar.mesem-maas-hesaplama'
 import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
+import { Route as YazarlarStajyerbulEditorleriRouteImport } from './routes/yazarlar.stajyerbul-editorleri'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -42,6 +45,11 @@ const BlogRoute = BlogRouteImport.update({
 const BlogYonetRoute = BlogYonetRouteImport.update({
   id: '/blog-yonet',
   path: '/blog-yonet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditorialPolitikaRoute = EditorialPolitikaRouteImport.update({
+  id: '/editorial-politika',
+  path: '/editorial-politika',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GirisRoute = GirisRouteImport.update({
@@ -119,16 +127,29 @@ const YonetimRoute = YonetimRouteImport.update({
   path: '/yonetim',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AraclarMesemMaasHesaplamaRoute =
+  AraclarMesemMaasHesaplamaRouteImport.update({
+    id: '/araclar/mesem-maas-hesaplama',
+    path: '/araclar/mesem-maas-hesaplama',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/blog_/$slug',
   path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const YazarlarStajyerbulEditorleriRoute =
+  YazarlarStajyerbulEditorleriRouteImport.update({
+    id: '/yazarlar/stajyerbul-editorleri',
+    path: '/yazarlar/stajyerbul-editorleri',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/blog': typeof BlogRoute
   '/blog-yonet': typeof BlogYonetRoute
+  '/editorial-politika': typeof EditorialPolitikaRoute
   '/giris': typeof GirisRoute
   '/gizlilik': typeof GizlilikRoute
   '/hakkimizda': typeof HakkimizdaRoute
@@ -144,12 +165,15 @@ export interface FileRoutesByFullPath {
   '/slayt': typeof SlaytRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
+  '/araclar/mesem-maas-hesaplama': typeof AraclarMesemMaasHesaplamaRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/yazarlar/stajyerbul-editorleri': typeof YazarlarStajyerbulEditorleriRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/blog': typeof BlogRoute
   '/blog-yonet': typeof BlogYonetRoute
+  '/editorial-politika': typeof EditorialPolitikaRoute
   '/giris': typeof GirisRoute
   '/gizlilik': typeof GizlilikRoute
   '/hakkimizda': typeof HakkimizdaRoute
@@ -165,13 +189,16 @@ export interface FileRoutesByTo {
   '/slayt': typeof SlaytRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
+  '/araclar/mesem-maas-hesaplama': typeof AraclarMesemMaasHesaplamaRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/yazarlar/stajyerbul-editorleri': typeof YazarlarStajyerbulEditorleriRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/blog': typeof BlogRoute
   '/blog-yonet': typeof BlogYonetRoute
+  '/editorial-politika': typeof EditorialPolitikaRoute
   '/giris': typeof GirisRoute
   '/gizlilik': typeof GizlilikRoute
   '/hakkimizda': typeof HakkimizdaRoute
@@ -187,7 +214,9 @@ export interface FileRoutesById {
   '/slayt': typeof SlaytRoute
   '/stajyer-bul': typeof StajyerBulRoute
   '/yonetim': typeof YonetimRoute
+  '/araclar/mesem-maas-hesaplama': typeof AraclarMesemMaasHesaplamaRoute
   '/blog_/$slug': typeof BlogSlugRoute
+  '/yazarlar/stajyerbul-editorleri': typeof YazarlarStajyerbulEditorleriRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -195,6 +224,7 @@ export interface FileRouteTypes {
     | '/'
     | '/blog'
     | '/blog-yonet'
+    | '/editorial-politika'
     | '/giris'
     | '/gizlilik'
     | '/hakkimizda'
@@ -210,12 +240,15 @@ export interface FileRouteTypes {
     | '/slayt'
     | '/stajyer-bul'
     | '/yonetim'
+    | '/araclar/mesem-maas-hesaplama'
     | '/blog/$slug'
+    | '/yazarlar/stajyerbul-editorleri'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/blog'
     | '/blog-yonet'
+    | '/editorial-politika'
     | '/giris'
     | '/gizlilik'
     | '/hakkimizda'
@@ -231,12 +264,15 @@ export interface FileRouteTypes {
     | '/slayt'
     | '/stajyer-bul'
     | '/yonetim'
+    | '/araclar/mesem-maas-hesaplama'
     | '/blog/$slug'
+    | '/yazarlar/stajyerbul-editorleri'
   id:
     | '__root__'
     | '/'
     | '/blog'
     | '/blog-yonet'
+    | '/editorial-politika'
     | '/giris'
     | '/gizlilik'
     | '/hakkimizda'
@@ -252,13 +288,16 @@ export interface FileRouteTypes {
     | '/slayt'
     | '/stajyer-bul'
     | '/yonetim'
+    | '/araclar/mesem-maas-hesaplama'
     | '/blog_/$slug'
+    | '/yazarlar/stajyerbul-editorleri'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BlogRoute: typeof BlogRoute
   BlogYonetRoute: typeof BlogYonetRoute
+  EditorialPolitikaRoute: typeof EditorialPolitikaRoute
   GirisRoute: typeof GirisRoute
   GizlilikRoute: typeof GizlilikRoute
   HakkimizdaRoute: typeof HakkimizdaRoute
@@ -274,7 +313,9 @@ export interface RootRouteChildren {
   SlaytRoute: typeof SlaytRoute
   StajyerBulRoute: typeof StajyerBulRoute
   YonetimRoute: typeof YonetimRoute
+  AraclarMesemMaasHesaplamaRoute: typeof AraclarMesemMaasHesaplamaRoute
   BlogSlugRoute: typeof BlogSlugRoute
+  YazarlarStajyerbulEditorleriRoute: typeof YazarlarStajyerbulEditorleriRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -298,6 +339,13 @@ declare module '@tanstack/react-router' {
       path: '/blog-yonet'
       fullPath: '/blog-yonet'
       preLoaderRoute: typeof BlogYonetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/editorial-politika': {
+      id: '/editorial-politika'
+      path: '/editorial-politika'
+      fullPath: '/editorial-politika'
+      preLoaderRoute: typeof EditorialPolitikaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/giris': {
@@ -405,11 +453,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof YonetimRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/araclar/mesem-maas-hesaplama': {
+      id: '/araclar/mesem-maas-hesaplama'
+      path: '/araclar/mesem-maas-hesaplama'
+      fullPath: '/araclar/mesem-maas-hesaplama'
+      preLoaderRoute: typeof AraclarMesemMaasHesaplamaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog_/$slug': {
       id: '/blog_/$slug'
       path: '/blog/$slug'
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/yazarlar/stajyerbul-editorleri': {
+      id: '/yazarlar/stajyerbul-editorleri'
+      path: '/yazarlar/stajyerbul-editorleri'
+      fullPath: '/yazarlar/stajyerbul-editorleri'
+      preLoaderRoute: typeof YazarlarStajyerbulEditorleriRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -419,6 +481,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BlogRoute: BlogRoute,
   BlogYonetRoute: BlogYonetRoute,
+  EditorialPolitikaRoute: EditorialPolitikaRoute,
   GirisRoute: GirisRoute,
   GizlilikRoute: GizlilikRoute,
   HakkimizdaRoute: HakkimizdaRoute,
@@ -434,7 +497,9 @@ const rootRouteChildren: RootRouteChildren = {
   SlaytRoute: SlaytRoute,
   StajyerBulRoute: StajyerBulRoute,
   YonetimRoute: YonetimRoute,
+  AraclarMesemMaasHesaplamaRoute: AraclarMesemMaasHesaplamaRoute,
   BlogSlugRoute: BlogSlugRoute,
+  YazarlarStajyerbulEditorleriRoute: YazarlarStajyerbulEditorleriRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

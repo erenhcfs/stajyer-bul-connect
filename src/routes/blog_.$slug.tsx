@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 import { estimateReadTime, type BlogPost } from "@/lib/blog-helpers";
-import { mergeBlogPosts, STATIC_BLOG_POSTS, type EditorialBlogPost } from "@/lib/blog-posts";
+import {
+  mergeBlogPosts,
+  mergeEditorialPost,
+  STATIC_BLOG_POSTS,
+  type EditorialBlogPost,
+} from "@/lib/blog-posts";
 import { AdUnit } from "@/components/AdUnit";
 import { recordBlogView } from "@/lib/blog-views";
 
@@ -25,7 +30,7 @@ export const Route = createFileRoute("/blog_/$slug")({
         .eq("published", true)
         .maybeSingle();
       if (error) throw error;
-      if (data) return { ...staticPost, ...data } as EditorialBlogPost;
+      if (data) return mergeEditorialPost(staticPost, data as BlogPost);
     } catch {
       // Editorial posts remain available when Supabase is temporarily unavailable.
     }
@@ -78,6 +83,7 @@ export const Route = createFileRoute("/blog_/$slug")({
                 author: {
                   "@type": "Organization",
                   name: loaderData.author_name || "Stajyer Bul Ekibi",
+                  url: `${SITE_URL}/yazarlar/stajyerbul-editorleri`,
                 },
                 publisher: {
                   "@type": "Organization",
@@ -239,9 +245,12 @@ function BlogDetailPage() {
                 {post.author_initials || "SB"}
               </div>
               <div>
-                <p className="text-sm font-bold text-foreground">
+                <Link
+                  to="/yazarlar/stajyerbul-editorleri"
+                  className="text-sm font-bold text-foreground hover:text-primary hover:underline"
+                >
                   {post.author_name || "Stajyer Bul Ekibi"}
-                </p>
+                </Link>
                 <p className="text-xs text-muted-foreground">StajyerBul içerik ekibi</p>
               </div>
             </div>
@@ -281,6 +290,18 @@ function BlogDetailPage() {
 
           {/* Makale İçeriği (Paragraflar halinde mükemmel okunabilirlik) */}
           <ArticleContent content={post.content} />
+
+          {post.keywords?.some((keyword) => keyword.toLocaleLowerCase("tr-TR").includes("maaş")) ? (
+            <Link
+              to="/araclar/mesem-maas-hesaplama"
+              className="mt-8 block rounded-2xl border border-primary/25 bg-primary/10 p-5 transition hover:border-primary"
+            >
+              <p className="font-bold text-primary">MESEM maaşını kendi tutarınla hesapla →</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Net asgari ücreti girerek yüzde 30 ve yüzde 50 karşılıklarını anında gör.
+              </p>
+            </Link>
+          ) : null}
 
           {post.sources?.length ? (
             <section

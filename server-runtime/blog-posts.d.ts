@@ -13,3 +13,4 @@ export type EditorialBlogPost = BlogPost & {
 };
 export declare const STATIC_BLOG_POSTS: EditorialBlogPost[];
 export declare function mergeBlogPosts(databasePosts?: BlogPost[]): EditorialBlogPost[];
+export declare function mergeEditorialPost(editorial: EditorialBlogPost | undefined, databasePost: BlogPost): EditorialBlogPost;
