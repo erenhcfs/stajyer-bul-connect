@@ -20,6 +20,7 @@
     "src/lib/blog-views.server.ts",
     "src/lib/admin.server.ts",
     "src/lib/blog-helpers.ts",
+    "src/lib/external-listings.ts",
     "src/lib/sitemap.server.ts",
     "src/lib/vercel-admin.server.ts"
   ]

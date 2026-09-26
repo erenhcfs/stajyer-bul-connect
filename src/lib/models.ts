@@ -44,6 +44,14 @@ export type JobListing = {
   requirements: string | null;
   status?: "active" | "closed";
   created_at: string;
+  slug?: string;
+  external?: boolean;
+  source_name?: string;
+  source_url?: string;
+  source_status?: "open" | "upcoming" | "follow";
+  source_status_label?: string;
+  verified_at?: string;
+  application_period?: string;
 };
 
 export type JobApplication = {

@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { STATIC_BLOG_POSTS } from "./blog-posts.js";
+import { EXTERNAL_JOB_LISTINGS } from "./external-listings.js";
 const SITE_URL = "https://stajyerbul.com.tr";
 const escapeXml = (value) => value.replace(/[<>&"']/g, (ch) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[ch]);
 export async function sitemapResponse() {
@@ -22,6 +23,11 @@ export async function sitemapResponse() {
         entries.push({
             loc: `${SITE_URL}/blog/${encodeURIComponent(post.slug)}`,
             lastmod: post.updated_at || post.created_at,
+        });
+    for (const listing of EXTERNAL_JOB_LISTINGS)
+        entries.push({
+            loc: `${SITE_URL}/ilanlar/${encodeURIComponent(listing.slug)}`,
+            lastmod: listing.verified_at,
         });
     const url = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"];
     const key = process.env["VITE_SUPABASE_ANON_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];

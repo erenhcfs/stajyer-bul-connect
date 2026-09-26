@@ -1,0 +1,24 @@
+export type ExternalListingStatus = "open" | "upcoming" | "follow";
+export type ExternalJobListing = {
+    id: string;
+    slug: string;
+    employer_id: string;
+    title: string;
+    company_name: string;
+    location: string;
+    work_type: string;
+    department: string;
+    description: string;
+    requirements: string;
+    status: "active";
+    created_at: string;
+    external: true;
+    source_name: string;
+    source_url: string;
+    source_status: ExternalListingStatus;
+    source_status_label: string;
+    verified_at: string;
+    application_period?: string;
+};
+export declare const EXTERNAL_JOB_LISTINGS: ExternalJobListing[];
+export declare function findExternalListing(slug: string): ExternalJobListing | undefined;

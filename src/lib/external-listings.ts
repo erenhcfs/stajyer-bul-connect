@@ -1,0 +1,166 @@
+export type ExternalListingStatus = "open" | "upcoming" | "follow";
+
+export type ExternalJobListing = {
+  id: string;
+  slug: string;
+  employer_id: string;
+  title: string;
+  company_name: string;
+  location: string;
+  work_type: string;
+  department: string;
+  description: string;
+  requirements: string;
+  status: "active";
+  created_at: string;
+  external: true;
+  source_name: string;
+  source_url: string;
+  source_status: ExternalListingStatus;
+  source_status_label: string;
+  verified_at: string;
+  application_period?: string;
+};
+
+// These cards point only to the organisations' own career pages. They intentionally
+// contain short editorial summaries rather than copied third-party job descriptions.
+export const EXTERNAL_JOB_LISTINGS: ExternalJobListing[] = [
+  {
+    id: "external:tusas-sky-experience",
+    slug: "tusas-sky-experience-aday-muhendislik",
+    employer_id: "external",
+    title: "SKY Experience Aday Mühendislik Programı",
+    company_name: "Türk Havacılık ve Uzay Sanayii (TUSAŞ)",
+    location: "Ankara / İstanbul / Bursa / Antalya",
+    work_type: "Yüz Yüze",
+    department: "Mühendislik",
+    description:
+      "Üniversitelerin ilgili mühendislik bölümlerinde okuyan 3. ve 4. sınıf öğrencileri için uzun dönem stajyer mühendislik programı.",
+    requirements:
+      "Bölüm, sınıf ve diğer başvuru koşulları dönemsel olarak değişebilir. Başvurmadan önce TUSAŞ kariyer sayfasındaki güncel şartları kontrol edin.",
+    status: "active",
+    created_at: "2026-09-26T00:00:00.000Z",
+    external: true,
+    source_name: "TUSAŞ Kariyer",
+    source_url: "https://kariyer.tusas.com/sky",
+    source_status: "open",
+    source_status_label: "Başvuru sayfası açık",
+    verified_at: "2026-09-26",
+  },
+  {
+    id: "external:tusas-sky-discover",
+    slug: "tusas-sky-discover-yaz-staji",
+    employer_id: "external",
+    title: "SKY Discover Kısa Dönem Yaz Stajı",
+    company_name: "Türk Havacılık ve Uzay Sanayii (TUSAŞ)",
+    location: "Türkiye",
+    work_type: "Yüz Yüze",
+    department: "Mühendislik",
+    description:
+      "İlgili mühendislik bölümlerinin 3. veya 4. sınıfında öğrenim gören öğrenciler için zorunlu yaz stajı programı.",
+    requirements:
+      "Zorunlu stajı bulunan öğrenciler başvurabilir. Kesin bölüm ve kontenjan bilgileri resmî başvuru döneminde açıklanır.",
+    status: "active",
+    created_at: "2026-09-26T00:00:00.000Z",
+    external: true,
+    source_name: "TUSAŞ Kariyer",
+    source_url: "https://kariyer.tusas.com/sky",
+    source_status: "upcoming",
+    source_status_label: "Yaklaşan dönem",
+    application_period: "Mart 2027",
+    verified_at: "2026-09-26",
+  },
+  {
+    id: "external:aselsan-a-yetenek",
+    slug: "aselsan-a-yetenek-yaz-staji",
+    employer_id: "external",
+    title: "a Yetenek Yaz Stajı",
+    company_name: "ASELSAN",
+    location: "Ankara",
+    work_type: "Yüz Yüze",
+    department: "Mühendislik ve Teknik Alanlar",
+    description:
+      "Lisans ve ön lisans öğrencilerinin mesleki deneyim kazanmasına yönelik ASELSAN yaz stajı programı.",
+    requirements:
+      "Program zorunlu stajı bulunan ve resmî sayfada açıklanan sınıf, bölüm ve not ortalaması şartlarını karşılayan öğrencilere yöneliktir.",
+    status: "active",
+    created_at: "2026-09-26T00:00:00.000Z",
+    external: true,
+    source_name: "ASELSAN Kariyer",
+    source_url: "https://www.aselsan.com/tr/kariyer/a-yetenek-yaz-staji",
+    source_status: "upcoming",
+    source_status_label: "Yaklaşan dönem",
+    application_period: "Her yıl 1-31 Mart",
+    verified_at: "2026-09-26",
+  },
+  {
+    id: "external:thy-staj",
+    slug: "turk-hava-yollari-staj-programi",
+    employer_id: "external",
+    title: "Türk Hava Yolları Staj Programı",
+    company_name: "Türk Hava Yolları",
+    location: "İstanbul",
+    work_type: "Yüz Yüze",
+    department: "Farklı İş Birimleri",
+    description:
+      "Türk Hava Yolları staj aday havuzu, İŞKUR koordinasyonundaki Ulusal Staj Programı üzerinden oluşturuluyor.",
+    requirements:
+      "Resmî sayfaya göre değerlendirmeler ihtiyaçlar ve dönem koşulları doğrultusunda yürütülür. Güncel başvuru takvimini Ulusal Staj Programı üzerinden takip edin.",
+    status: "active",
+    created_at: "2026-09-26T00:00:00.000Z",
+    external: true,
+    source_name: "Türk Hava Yolları Kariyer",
+    source_url: "https://careers.turkishairlines.com/tecrubesiz-birim-calisani-yeni-mezunogrenci",
+    source_status: "follow",
+    source_status_label: "Takvimi takip edin",
+    verified_at: "2026-09-26",
+  },
+  {
+    id: "external:roketsan-staj",
+    slug: "roketsan-staj-ve-genc-yetenek-programlari",
+    employer_id: "external",
+    title: "Staj ve Genç Yetenek Programları",
+    company_name: "ROKETSAN",
+    location: "Ankara",
+    work_type: "Yüz Yüze",
+    department: "Mühendislik ve Teknik Alanlar",
+    description:
+      "ROKETSAN'ın Stage, Stage Technical ve R-Force genç yetenek programları için resmî kariyer kanalı.",
+    requirements:
+      "Program koşulları ve başvuru tarihleri dönemsel olarak duyurulur. Resmî kariyer sayfasındaki güncel ilanları kontrol edin.",
+    status: "active",
+    created_at: "2026-09-26T00:00:00.000Z",
+    external: true,
+    source_name: "ROKETSAN Kariyer",
+    source_url: "https://kariyer.roketsan.com.tr/",
+    source_status: "follow",
+    source_status_label: "Duyuruları takip edin",
+    verified_at: "2026-09-26",
+  },
+  {
+    id: "external:ulusal-staj-programi",
+    slug: "ulusal-staj-programi",
+    employer_id: "external",
+    title: "Ulusal Staj Programı",
+    company_name: "İŞKUR",
+    location: "Türkiye Geneli",
+    work_type: "Kurumlara Göre Değişir",
+    department: "Tüm Bölümler",
+    description:
+      "Kamu kurumları ve özel sektör kuruluşlarının staj fırsatlarını öğrencilere ulaştıran ulusal erken kariyer programı.",
+    requirements:
+      "Başvuru, teklif ve uygunluk koşulları İŞKUR'un resmî Ulusal Staj Programı sayfasında açıklanır.",
+    status: "active",
+    created_at: "2026-09-26T00:00:00.000Z",
+    external: true,
+    source_name: "İŞKUR Ulusal Staj Programı",
+    source_url: "https://ulusalstajprogrami.iskur.gov.tr/",
+    source_status: "follow",
+    source_status_label: "Yeni dönemi takip edin",
+    verified_at: "2026-09-26",
+  },
+];
+
+export function findExternalListing(slug: string) {
+  return EXTERNAL_JOB_LISTINGS.find((listing) => listing.slug === slug);
+}

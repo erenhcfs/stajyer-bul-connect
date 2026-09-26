@@ -1,6 +1,7 @@
 import type { Profile, JobListing } from "@/lib/models";
 import type { User } from "@supabase/supabase-js";
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Navbar } from "@/components/layout/Navbar";
@@ -16,7 +17,10 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
+  ExternalLink,
+  ShieldCheck,
 } from "lucide-react";
+import { EXTERNAL_JOB_LISTINGS } from "@/lib/external-listings";
 
 export const Route = createFileRoute("/ilanlar")({
   loader: async () => {
@@ -27,9 +31,9 @@ export const Route = createFileRoute("/ilanlar")({
         .eq("status", "active")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return { listings: (data ?? []) as JobListing[] };
+      return { listings: [...EXTERNAL_JOB_LISTINGS, ...((data ?? []) as JobListing[])] };
     } catch {
-      return { listings: [] as JobListing[] };
+      return { listings: [...EXTERNAL_JOB_LISTINGS] as JobListing[] };
     }
   },
   validateSearch: (search: Record<string, unknown>): { q?: string; city?: string } => ({
@@ -39,9 +43,16 @@ export const Route = createFileRoute("/ilanlar")({
   head: () => ({
     meta: [
       { title: "Staj İlanları — StajyerBul" },
-      { name: "description", content: "En güncel staj ve kariyer fırsatlarını keşfedin." },
+      {
+        name: "description",
+        content:
+          "Türkiye genelindeki doğrulanmış staj programlarını ve işletmelerin güncel staj ilanlarını keşfedin.",
+      },
       { property: "og:title", content: "Staj İlanları — StajyerBul" },
-      { property: "og:description", content: "En güncel staj ve kariyer fırsatlarını keşfedin." },
+      {
+        property: "og:description",
+        content: "Resmî şirket kaynaklarından doğrulanan staj programları ve güncel ilanlar.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -126,7 +137,7 @@ function IlanlarPage() {
 
       if (error) throw error;
       if (data) {
-        setListings(data);
+        setListings([...EXTERNAL_JOB_LISTINGS, ...data]);
       }
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "İlanlar yüklenemedi.");
@@ -238,6 +249,9 @@ function IlanlarPage() {
         .includes(searchQuery.toLocaleLowerCase("tr-TR")) ||
       (item.department || "")
         .toLocaleLowerCase("tr-TR")
+        .includes(searchQuery.toLocaleLowerCase("tr-TR")) ||
+      (item.location || "")
+        .toLocaleLowerCase("tr-TR")
         .includes(searchQuery.toLocaleLowerCase("tr-TR"));
     const matchesType = selectedWorkType === "tumu" || item.work_type === selectedWorkType;
     return (
@@ -262,7 +276,8 @@ function IlanlarPage() {
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">Staj İlanları</h1>
             <p className="text-muted-foreground mt-1">
-              Geleceğinizi şekillendirecek en güncel staj ve çalışma fırsatlarını keşfedin.
+              Resmî kariyer kaynaklarından doğrulanan programları ve güncel staj ilanlarını
+              keşfedin.
             </p>
           </div>
 
@@ -351,9 +366,16 @@ function IlanlarPage() {
                     <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg shrink-0">
                       {item.company_name?.charAt(0) || "F"}
                     </div>
-                    <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground">
-                      {item.work_type}
-                    </span>
+                    <div className="flex flex-col items-end gap-1.5">
+                      <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground">
+                        {item.work_type}
+                      </span>
+                      {item.external && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                          <ShieldCheck className="size-3" /> Resmî kaynak
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <h3 className="font-bold text-lg group-hover:text-primary transition-colors">
@@ -371,11 +393,35 @@ function IlanlarPage() {
                       <Briefcase className="size-3.5" /> {item.department}
                     </span>
                   </div>
+                  {item.external && (
+                    <div className="mt-4 rounded-xl bg-primary/5 px-3 py-2 text-xs">
+                      <strong className="text-primary">{item.source_status_label}</strong>
+                      {item.application_period && (
+                        <span className="ml-1 text-muted-foreground">
+                          · {item.application_period}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-xs font-semibold text-primary">
-                  <span>Detayları İncele</span>
-                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                  {item.external && item.slug ? (
+                    <Link
+                      to="/ilanlar/$slug"
+                      params={{ slug: item.slug }}
+                      onClick={(event) => event.stopPropagation()}
+                      className="flex w-full items-center justify-between"
+                    >
+                      <span>Detay ve Başvuru</span>
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  ) : (
+                    <>
+                      <span>Detayları İncele</span>
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -424,35 +470,48 @@ function IlanlarPage() {
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-border flex gap-3">
-                <label className="block flex-1 text-sm">
-                  <span className="mb-1.5 block font-medium">Kısa ön yazı (isteğe bağlı)</span>
-                  <textarea
-                    value={coverLetter}
-                    onChange={(event) => setCoverLetter(event.target.value.slice(0, 1000))}
-                    rows={3}
-                    placeholder="Kendinizi ve bu ilanla neden ilgilendiğinizi kısaca anlatın."
-                    className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5"
-                  />
-                </label>
-              </div>
+              {!selectedListing.external && (
+                <div className="mt-8 pt-4 border-t border-border flex gap-3">
+                  <label className="block flex-1 text-sm">
+                    <span className="mb-1.5 block font-medium">Kısa ön yazı (isteğe bağlı)</span>
+                    <textarea
+                      value={coverLetter}
+                      onChange={(event) => setCoverLetter(event.target.value.slice(0, 1000))}
+                      rows={3}
+                      placeholder="Kendinizi ve bu ilanla neden ilgilendiğinizi kısaca anlatın."
+                      className="w-full rounded-xl border border-input bg-background px-3.5 py-2.5"
+                    />
+                  </label>
+                </div>
+              )}
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
                 {applicationMessage && (
                   <p role="status" className="flex-1 text-sm">
                     {applicationMessage}
                   </p>
                 )}
-                <button
-                  onClick={handleApply}
-                  disabled={applying || !applicationsEnabled}
-                  className="flex-1 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90"
-                >
-                  {applying
-                    ? "Gönderiliyor..."
-                    : applicationsEnabled
-                      ? "Başvuruyu Gönder"
-                      : "Başvurular geçici olarak kapalı"}
-                </button>
+                {selectedListing.external && selectedListing.source_url ? (
+                  <a
+                    href={selectedListing.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90"
+                  >
+                    Resmî Sayfada Başvur <ExternalLink className="size-4" />
+                  </a>
+                ) : (
+                  <button
+                    onClick={handleApply}
+                    disabled={applying || !applicationsEnabled}
+                    className="flex-1 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90"
+                  >
+                    {applying
+                      ? "Gönderiliyor..."
+                      : applicationsEnabled
+                        ? "Başvuruyu Gönder"
+                        : "Başvurular geçici olarak kapalı"}
+                  </button>
+                )}
                 <button
                   onClick={() => setSelectedListing(null)}
                   className="rounded-xl bg-muted px-6 py-3 text-sm font-semibold"

@@ -30,6 +30,7 @@ import { Route as StajyerBulRouteImport } from './routes/stajyer-bul'
 import { Route as YonetimRouteImport } from './routes/yonetim'
 import { Route as AraclarMesemMaasHesaplamaRouteImport } from './routes/araclar.mesem-maas-hesaplama'
 import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
+import { Route as IlanlarSlugRouteImport } from './routes/ilanlar_.$slug'
 import { Route as YazarlarStajyerbulEditorleriRouteImport } from './routes/yazarlar.stajyerbul-editorleri'
 
 const IndexRoute = IndexRouteImport.update({
@@ -138,6 +139,11 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IlanlarSlugRoute = IlanlarSlugRouteImport.update({
+  id: '/ilanlar_/$slug',
+  path: '/ilanlar/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const YazarlarStajyerbulEditorleriRoute =
   YazarlarStajyerbulEditorleriRouteImport.update({
     id: '/yazarlar/stajyerbul-editorleri',
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/yonetim': typeof YonetimRoute
   '/araclar/mesem-maas-hesaplama': typeof AraclarMesemMaasHesaplamaRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/ilanlar/$slug': typeof IlanlarSlugRoute
   '/yazarlar/stajyerbul-editorleri': typeof YazarlarStajyerbulEditorleriRoute
 }
 export interface FileRoutesByTo {
@@ -191,6 +198,7 @@ export interface FileRoutesByTo {
   '/yonetim': typeof YonetimRoute
   '/araclar/mesem-maas-hesaplama': typeof AraclarMesemMaasHesaplamaRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/ilanlar/$slug': typeof IlanlarSlugRoute
   '/yazarlar/stajyerbul-editorleri': typeof YazarlarStajyerbulEditorleriRoute
 }
 export interface FileRoutesById {
@@ -216,6 +224,7 @@ export interface FileRoutesById {
   '/yonetim': typeof YonetimRoute
   '/araclar/mesem-maas-hesaplama': typeof AraclarMesemMaasHesaplamaRoute
   '/blog_/$slug': typeof BlogSlugRoute
+  '/ilanlar_/$slug': typeof IlanlarSlugRoute
   '/yazarlar/stajyerbul-editorleri': typeof YazarlarStajyerbulEditorleriRoute
 }
 export interface FileRouteTypes {
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/yonetim'
     | '/araclar/mesem-maas-hesaplama'
     | '/blog/$slug'
+    | '/ilanlar/$slug'
     | '/yazarlar/stajyerbul-editorleri'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/yonetim'
     | '/araclar/mesem-maas-hesaplama'
     | '/blog/$slug'
+    | '/ilanlar/$slug'
     | '/yazarlar/stajyerbul-editorleri'
   id:
     | '__root__'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/yonetim'
     | '/araclar/mesem-maas-hesaplama'
     | '/blog_/$slug'
+    | '/ilanlar_/$slug'
     | '/yazarlar/stajyerbul-editorleri'
   fileRoutesById: FileRoutesById
 }
@@ -315,6 +327,7 @@ export interface RootRouteChildren {
   YonetimRoute: typeof YonetimRoute
   AraclarMesemMaasHesaplamaRoute: typeof AraclarMesemMaasHesaplamaRoute
   BlogSlugRoute: typeof BlogSlugRoute
+  IlanlarSlugRoute: typeof IlanlarSlugRoute
   YazarlarStajyerbulEditorleriRoute: typeof YazarlarStajyerbulEditorleriRoute
 }
 
@@ -467,6 +480,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ilanlar_/$slug': {
+      id: '/ilanlar_/$slug'
+      path: '/ilanlar/$slug'
+      fullPath: '/ilanlar/$slug'
+      preLoaderRoute: typeof IlanlarSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/yazarlar/stajyerbul-editorleri': {
       id: '/yazarlar/stajyerbul-editorleri'
       path: '/yazarlar/stajyerbul-editorleri'
@@ -499,6 +519,7 @@ const rootRouteChildren: RootRouteChildren = {
   YonetimRoute: YonetimRoute,
   AraclarMesemMaasHesaplamaRoute: AraclarMesemMaasHesaplamaRoute,
   BlogSlugRoute: BlogSlugRoute,
+  IlanlarSlugRoute: IlanlarSlugRoute,
   YazarlarStajyerbulEditorleriRoute: YazarlarStajyerbulEditorleriRoute,
 }
 export const routeTree = rootRouteImport
