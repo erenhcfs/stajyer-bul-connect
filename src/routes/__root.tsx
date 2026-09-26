@@ -169,18 +169,29 @@ function RootShell({ children }: { children: ReactNode }) {
         "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2311108731423361";
       document.head.appendChild(script);
     }
+
+    const analyticsWindow = window as Window & {
+      dataLayer?: unknown[][];
+      stajyerbulAnalyticsInitialized?: boolean;
+    };
+    const dataLayer = (analyticsWindow.dataLayer ||= []);
+    const gtag = (...args: unknown[]) => dataLayer.push(args);
     if (!document.getElementById("stajyerbul-analytics")) {
       const analytics = document.createElement("script");
       analytics.id = "stajyerbul-analytics";
       analytics.async = true;
       analytics.src = "https://www.googletagmanager.com/gtag/js?id=G-5YBEH9YHFJ";
       document.head.appendChild(analytics);
-      const analyticsWindow = window as Window & { dataLayer?: unknown[][] };
-      const dataLayer = (analyticsWindow.dataLayer ||= []);
-      const gtag = (...args: unknown[]) => dataLayer.push(args);
-      gtag("js", new Date());
-      gtag("config", "G-5YBEH9YHFJ", { send_page_view: true });
     }
+    if (!analyticsWindow.stajyerbulAnalyticsInitialized) {
+      gtag("js", new Date());
+      analyticsWindow.stajyerbulAnalyticsInitialized = true;
+    }
+    gtag("config", "G-5YBEH9YHFJ", {
+      page_path: pathname,
+      page_location: window.location.href,
+      send_page_view: true,
+    });
   }, [adConsent, pathname]);
 
   const chooseConsent = (value: "accepted" | "rejected") => {
